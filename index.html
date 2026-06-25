@@ -50,12 +50,12 @@
 
     .tab {
       flex: 1;
-      padding: 8px 4px;
+      padding: 8px 2px;
       border-radius: 8px;
       border: none;
       background: transparent;
       color: #8b949e;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s;
@@ -265,8 +265,9 @@
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" data-tab="tonight" onclick="switchTab('tonight')">🌅 Tonight</button>
-    <button class="tab" data-tab="tomorrow" onclick="switchTab('tomorrow')">🌄 Tomorrow AM</button>
-    <button class="tab" data-tab="noon" onclick="switchTab('noon')">🔭 Plan Ahead</button>
+    <button class="tab" data-tab="tomorrow" onclick="switchTab('tomorrow')">🌄 Tom. AM</button>
+    <button class="tab" data-tab="tomorrow-night" onclick="switchTab('tomorrow-night')">🌇 Tom. PM</button>
+    <button class="tab" data-tab="noon" onclick="switchTab('noon')">🔭 Plan</button>
   </div>
 
   <button class="check-btn" id="checkBtn" onclick="runCheck()">Check Conditions</button>
@@ -474,7 +475,7 @@ async function fetchWeather() {
     `&hourly=cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,precipitation_probability,temperature_2m` +
     `&daily=sunrise,sunset` +
     `&timezone=America%2FLos_Angeles` +
-    `&forecast_days=2`;
+    `&forecast_days=3`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Weather API error: ${res.status}`);
@@ -644,12 +645,17 @@ function renderResults(data) {
     sunEvent     = data.daily.sunset[0];
     sunLabel     = 'Sunset';
     arriveOffset = 45;
-    title        = 'Sunset';
-  } else {
-    sunEvent     = data.daily.sunrise[1]; // tomorrow
+    title        = 'Tonight Sunset';
+  } else if (currentTab === 'tomorrow') {
+    sunEvent     = data.daily.sunrise[1];
     sunLabel     = 'Sunrise';
     arriveOffset = 30;
-    title        = 'Sunrise';
+    title        = 'Tomorrow Sunrise';
+  } else {
+    sunEvent     = data.daily.sunset[1]; // tomorrow night
+    sunLabel     = 'Sunset';
+    arriveOffset = 45;
+    title        = 'Tomorrow Sunset';
   }
 
   const wx = extractHour(data, nearestHour(sunEvent));
