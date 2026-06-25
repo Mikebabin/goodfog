@@ -269,6 +269,23 @@
       color: #fff;
     }
 
+    .cam-item.cam-broken {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      background: #21262d;
+    }
+
+    .cam-item.cam-broken .cam-label {
+      position: static;
+      background: transparent;
+      color: #58a6ff;
+      font-size: 0.8rem;
+      padding: 12px;
+      text-align: center;
+    }
+
     .cam-hint {
       font-size: 0.8rem;
       color: #8b949e;
@@ -355,22 +372,25 @@
   <div class="card">
     <h3>Live Cameras</h3>
     <div class="cam-grid">
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg" target="_blank">
-        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg"
-             alt="West Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">West Peak (ALERTCal)</div>
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/?pos=37.9235_-122.5965_13&id=Axis-TamWest" target="_blank">
+        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamWest/latest-frame.jpg"
+             alt="West Peak"
+             onerror="this.parentElement.classList.add('cam-broken'); this.style.display='none';" />
+        <div class="cam-label">West Peak (ALERTCal) ↗</div>
       </a>
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg" target="_blank">
-        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg"
-             alt="East Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">East Peak (ALERTCal)</div>
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/?pos=37.9235_-122.5965_13&id=Axis-TamEast" target="_blank">
+        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamEast/latest-frame.jpg"
+             alt="East Peak"
+             onerror="this.parentElement.classList.add('cam-broken'); this.style.display='none';" />
+        <div class="cam-label">East Peak (ALERTCal) ↗</div>
       </a>
     </div>
     <div class="cam-grid" style="margin-top:8px;">
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg" target="_blank">
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/?pos=37.9235_-122.5965_13&id=Axis-MuirBeach" target="_blank">
         <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg"
-             alt="Muir Beach" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">Muir Beach Overlook (PG&amp;E)</div>
+             alt="Muir Beach"
+             onerror="this.parentElement.classList.add('cam-broken'); this.style.display='none';" />
+        <div class="cam-label">Muir Beach Overlook ↗</div>
       </a>
     </div>
     <p class="cam-hint">
