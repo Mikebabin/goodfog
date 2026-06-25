@@ -235,40 +235,6 @@
     .resource-name { font-weight: 600; }
     .resource-desc { font-size: 0.78rem; color: #8b949e; margin-top: 1px; }
 
-    /* Camera thumbnails */
-    .cam-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .cam-item {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #21262d;
-      border: 1px solid #30363d;
-    }
-
-    .cam-item img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      display: block;
-    }
-
-    .cam-label {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0,0,0,0.7);
-      padding: 4px 8px;
-      font-size: 0.72rem;
-      color: #fff;
-    }
-
     .cam-hint {
       font-size: 0.8rem;
       color: #8b949e;
@@ -354,27 +320,31 @@
   <!-- Live Cameras -->
   <div class="card">
     <h3>Live Cameras</h3>
-    <div class="cam-grid">
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg" target="_blank">
-        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg"
-             alt="West Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">West Peak (ALERTCal)</div>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://cameras.alertcalifornia.org/?pos=37.9691_-122.5971_11&id=Axis-TamWest" target="_blank">
+        <span class="resource-icon">📷</span>
+        <div class="resource-info">
+          <div class="resource-name">West Peak — ALERTCalifornia</div>
+          <div class="resource-desc">Summit cam facing the coast — watch for fog below</div>
+        </div>
       </a>
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg" target="_blank">
-        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg"
-             alt="East Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">East Peak (ALERTCal)</div>
+      <a class="resource-link" href="https://cameras.alertcalifornia.org/?pos=37.9691_-122.5971_11&id=Axis-TamEast" target="_blank">
+        <span class="resource-icon">📷</span>
+        <div class="resource-info">
+          <div class="resource-name">East Peak — ALERTCalifornia</div>
+          <div class="resource-desc">Second summit angle toward the bay</div>
+        </div>
       </a>
-    </div>
-    <div class="cam-grid" style="margin-top:8px;">
-      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg" target="_blank">
-        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg"
-             alt="Muir Beach" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
-        <div class="cam-label">Muir Beach Overlook (PG&amp;E)</div>
+      <a class="resource-link" href="https://cameras.alertcalifornia.org/?pos=37.9691_-122.5971_11&id=Axis-MuirBeach" target="_blank">
+        <span class="resource-icon">📷</span>
+        <div class="resource-info">
+          <div class="resource-name">Muir Beach Overlook — ALERTCalifornia</div>
+          <div class="resource-desc">Coastal view — fog rolling in from the Pacific</div>
+        </div>
       </a>
     </div>
     <p class="cam-hint">
-      <strong>What to look for:</strong> Summit cams should show clear sky above a white sea of cloud. From below, fog hugs the hillside while the peak stays clear.
+      <strong>What to look for:</strong> Summit cams should show clear sky above a white sea of cloud. Muir Beach shows the marine layer rolling in from the coast.
     </p>
   </div>
 
