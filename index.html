@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mt. Tam Inversion Checker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 28px 0 20px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f0f6fc;
+    }
+
+    header p {
+      color: #8b949e;
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      background: #161b22;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+      border: 1px solid #30363d;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #8b949e;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: #21262d;
+      color: #f0f6fc;
+    }
+
+    .check-btn {
+      width: 100%;
+      padding: 14px;
+      background: #238636;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 16px;
+    }
+
+    .check-btn:hover { background: #2ea043; }
+    .check-btn:disabled { background: #21262d; color: #8b949e; cursor: not-allowed; }
+
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      color: #8b949e;
+    }
+
+    .spinner.show { display: block; }
+
+    /* Verdict banner */
+    .verdict-banner {
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .verdict-banner.go     { background: #0d4429; border: 1px solid #238636; }
+    .verdict-banner.try    { background: #3d2400; border: 1px solid #9e6a03; }
+    .verdict-banner.maybe  { background: #2d1b00; border: 1px solid #7d4e00; }
+    .verdict-banner.no     { background: #3d0d12; border: 1px solid #8b2020; }
+
+    .verdict-emoji { font-size: 2.4rem; margin-bottom: 8px; }
+    .verdict-label { font-size: 1.4rem; font-weight: 700; }
+    .verdict-score { font-size: 0.9rem; color: #8b949e; margin-top: 4px; }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #8b949e;
+      margin-bottom: 12px;
+    }
+
+    /* Factor pills */
+    .factors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .factor {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #21262d;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    .factor.good  { border-left: 3px solid #238636; }
+    .factor.ok    { border-left: 3px solid #9e6a03; }
+    .factor.bad   { border-left: 3px solid #8b2020; }
+
+    /* Weather row */
+    .wx-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .wx-item { }
+    .wx-label { font-size: 0.75rem; color: #8b949e; margin-bottom: 2px; }
+    .wx-value { font-size: 1rem; font-weight: 600; }
+
+    /* Timing */
+    .timing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.9rem;
+    }
+    .timing-row:last-child { border-bottom: none; }
+    .timing-label { color: #8b949e; }
+    .timing-value { font-weight: 600; }
+
+    /* Explanation */
+    .explanation {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+
+    /* Noon comparison */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .compare-col {
+      background: #0d1117;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .compare-col h4 {
+      font-size: 0.8rem;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
+
+    .compare-score {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .compare-verdict {
+      font-size: 0.82rem;
+    }
+
+    /* Resources section */
+    .resource-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .resource-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #21262d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-decoration: none;
+      color: #e6edf3;
+      font-size: 0.88rem;
+      transition: background 0.15s;
+    }
+
+    .resource-link:hover { background: #2d333b; }
+
+    .resource-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    .resource-info { flex: 1; }
+    .resource-name { font-weight: 600; }
+    .resource-desc { font-size: 0.78rem; color: #8b949e; margin-top: 1px; }
+
+    /* Camera thumbnails */
+    .cam-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .cam-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #21262d;
+      border: 1px solid #30363d;
+    }
+
+    .cam-item img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cam-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      color: #fff;
+    }
+
+    .cam-hint {
+      font-size: 0.8rem;
+      color: #8b949e;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .error-box {
+      background: #3d0d12;
+      border: 1px solid #8b2020;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.88rem;
+      color: #ffa7a7;
+      margin-bottom: 16px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🌁 Mt. Tam Inversion</h1>
+    <p>Marine layer checker for Marin County</p>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="tonight" onclick="switchTab('tonight')">🌅 Tonight</button>
+    <button class="tab" data-tab="tomorrow" onclick="switchTab('tomorrow')">🌄 Tomorrow AM</button>
+    <button class="tab" data-tab="noon" onclick="switchTab('noon')">🔭 Plan Ahead</button>
+  </div>
+
+  <button class="check-btn" id="checkBtn" onclick="runCheck()">Check Conditions</button>
+
+  <div id="spinner" class="spinner">Fetching weather data…</div>
+  <div id="errorBox" class="error-box hidden"></div>
+  <div id="results"></div>
+
+  <!-- Always-visible resources -->
+  <div class="card" style="margin-top:8px;">
+    <h3>Verify the Forecast</h3>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://www.windy.com/?clouds,37.923,-122.597,11" target="_blank">
+        <span class="resource-icon">☁️</span>
+        <div class="resource-info">
+          <div class="resource-name">Windy — Clouds</div>
+          <div class="resource-desc">Cloud layer height over Mt. Tam</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.windy.com/?fog,37.923,-122.597,11" target="_blank">
+        <span class="resource-icon">🌫️</span>
+        <div class="resource-info">
+          <div class="resource-name">Windy — Fog (West Tam)</div>
+          <div class="resource-desc">Watch fog rolling in from the coast</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.windy.com/?wind,37.923,-122.597,11" target="_blank">
+        <span class="resource-icon">💨</span>
+        <div class="resource-info">
+          <div class="resource-name">Windy — Wind</div>
+          <div class="resource-desc">Strong wind disperses the layer</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://fog.today" target="_blank">
+        <span class="resource-icon">🛰️</span>
+        <div class="resource-info">
+          <div class="resource-name">fog.today</div>
+          <div class="resource-desc">NOAA GOES-16 satellite fog tracker</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.yr.no/en/forecast/daily-table/2-5381438/United%20States/California/Marin%20County/Mt.%20Tamalpais%20State%20Park" target="_blank">
+        <span class="resource-icon">🇳🇴</span>
+        <div class="resource-info">
+          <div class="resource-name">yr.no — Mt. Tam</div>
+          <div class="resource-desc">Hourly Norwegian Met forecast — great fog detail</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Live Cameras -->
+  <div class="card">
+    <h3>Live Cameras</h3>
+    <div class="cam-grid">
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg" target="_blank">
+        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisWest/latest-frame.jpg"
+             alt="West Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
+        <div class="cam-label">West Peak (ALERTCal)</div>
+      </a>
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg" target="_blank">
+        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-TamalpaisEast/latest-frame.jpg"
+             alt="East Peak" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
+        <div class="cam-label">East Peak (ALERTCal)</div>
+      </a>
+    </div>
+    <div class="cam-grid" style="margin-top:8px;">
+      <a class="cam-item" href="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg" target="_blank">
+        <img src="https://cameras.alertcalifornia.org/public-camera-data/Axis-MuirBeach/latest-frame.jpg"
+             alt="Muir Beach" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%2321262d%22 width=%22200%22 height=%22150%22/><text fill=%22%238b949e%22 font-size=%2212%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22>No feed</text></svg>'" />
+        <div class="cam-label">Muir Beach Overlook (PG&amp;E)</div>
+      </a>
+    </div>
+    <p class="cam-hint">
+      <strong>What to look for:</strong> Summit cams should show clear sky above a white sea of cloud. From below, fog hugs the hillside while the peak stays clear.
+    </p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+const LAT = 37.9235;
+const LON = -122.5965;
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let currentTab = 'tonight';
+let weatherCache = null;
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  if (weatherCache) renderResults(weatherCache);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtTime(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function addMinutes(isoStr, mins) {
+  return new Date(new Date(isoStr).getTime() + mins * 60000).toISOString();
+}
+
+function subtractMinutes(isoStr, mins) {
+  return addMinutes(isoStr, -mins);
+}
+
+// ─── Scoring ──────────────────────────────────────────────────────────────────
+// Returns { score 0-100, factors[], explanation }
+function scoreConditions(wx) {
+  // wx: { lowCloud, midCloud, highCloud, wind, rain, temp }
+  let score = 0;
+  const factors = [];
+
+  // 1. Low cloud cover (0-950hPa) — most important (40 pts)
+  const lc = wx.lowCloud;
+  if (lc >= 75) {
+    score += 40;
+    factors.push({ label: `Low cloud ${lc}%`, rating: 'good' });
+  } else if (lc >= 50) {
+    score += 25;
+    factors.push({ label: `Low cloud ${lc}%`, rating: 'ok' });
+  } else if (lc >= 30) {
+    score += 12;
+    factors.push({ label: `Low cloud ${lc}%`, rating: 'ok' });
+  } else {
+    score += 0;
+    factors.push({ label: `Low cloud ${lc}%`, rating: 'bad' });
+  }
+
+  // 2. Wind speed (20 pts) — calm wind keeps layer intact
+  const w = wx.wind;
+  if (w <= 5) {
+    score += 20;
+    factors.push({ label: `Wind ${w} mph`, rating: 'good' });
+  } else if (w <= 10) {
+    score += 14;
+    factors.push({ label: `Wind ${w} mph`, rating: 'ok' });
+  } else if (w <= 18) {
+    score += 6;
+    factors.push({ label: `Wind ${w} mph`, rating: 'ok' });
+  } else {
+    score += 0;
+    factors.push({ label: `Wind ${w} mph`, rating: 'bad' });
+  }
+
+  // 3. Mid/high cloud — want low (clear above the inversion) (20 pts)
+  const mc = wx.midCloud;
+  const hc = wx.highCloud;
+  const above = Math.max(mc, hc);
+  if (above <= 20) {
+    score += 20;
+    factors.push({ label: `Clear above ${above}%`, rating: 'good' });
+  } else if (above <= 50) {
+    score += 10;
+    factors.push({ label: `Some high cloud ${above}%`, rating: 'ok' });
+  } else {
+    score += 0;
+    factors.push({ label: `High cloud ${above}%`, rating: 'bad' });
+  }
+
+  // 4. Rain probability (20 pts)
+  const r = wx.rain;
+  if (r <= 5) {
+    score += 20;
+    factors.push({ label: `Rain ${r}%`, rating: 'good' });
+  } else if (r <= 20) {
+    score += 10;
+    factors.push({ label: `Rain ${r}%`, rating: 'ok' });
+  } else {
+    score += 0;
+    factors.push({ label: `Rain ${r}%`, rating: 'bad' });
+  }
+
+  // Explanation
+  let explanation = '';
+  if (score >= 70) {
+    explanation = `Strong inversion conditions! Low cloud cover is high (${lc}%) with calm winds (${w} mph) — the marine layer is likely sitting right at the Mt. Tam ridgeline. Arrive early to watch the fog roll.`;
+  } else if (score >= 50) {
+    explanation = `Decent chance. ${lc >= 50 ? 'Moderate low cloud cover' : 'Low cloud cover is a bit thin'} and ${w <= 10 ? 'calm winds' : 'some wind'} — conditions are marginal but could reward a visit. Check the cameras before heading out.`;
+  } else if (score >= 30) {
+    explanation = `Unlikely but possible. ${lc < 30 ? 'Low cloud cover is thin — the marine layer may not reach the ridgeline. ' : ''}${w > 15 ? 'Wind is too strong to hold the layer in place. ' : ''}Check fog.today and the live cameras for ground truth.`;
+  } else {
+    explanation = `Not worth the drive today. ${r > 20 ? 'Rain in the forecast. ' : ''}${lc < 30 ? 'Minimal marine layer. ' : ''}${w > 20 ? 'Too windy. ' : ''}Save it for a better day.`;
+  }
+
+  return { score, factors, explanation };
+}
+
+function verdictFromScore(score) {
+  if (score >= 70) return { label: 'Go for it!',      emoji: '🚀', cls: 'go'    };
+  if (score >= 50) return { label: 'Worth a try',     emoji: '🤔', cls: 'try'   };
+  if (score >= 30) return { label: 'Maybe next time', emoji: '😶‍🌫️', cls: 'maybe' };
+  return              { label: 'Stay home',           emoji: '🛑', cls: 'no'    };
+}
+
+// ─── Fetch weather ────────────────────────────────────────────────────────────
+async function fetchWeather() {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+    `&hourly=cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,precipitation_probability,temperature_2m` +
+    `&daily=sunrise,sunset` +
+    `&timezone=America%2FLos_Angeles` +
+    `&forecast_days=2`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Weather API error: ${res.status}`);
+  return res.json();
+}
+
+// ─── Extract hour data ────────────────────────────────────────────────────────
+function extractHour(data, isoHour) {
+  // isoHour: "2025-06-22T19:00"
+  const idx = data.hourly.time.findIndex(t => t === isoHour);
+  if (idx === -1) return null;
+  return {
+    lowCloud:  data.hourly.cloudcover_low[idx]  ?? 0,
+    midCloud:  data.hourly.cloudcover_mid[idx]  ?? 0,
+    highCloud: data.hourly.cloudcover_high[idx] ?? 0,
+    wind:      Math.round(data.hourly.windspeed_10m[idx] * 0.621371), // km/h → mph
+    rain:      data.hourly.precipitation_probability[idx] ?? 0,
+    temp:      Math.round(data.hourly.temperature_2m[idx] * 9/5 + 32), // °C → °F
+  };
+}
+
+function nearestHour(isoFull) {
+  // Round to nearest hour slot in open-meteo format "YYYY-MM-DDTHH:00"
+  const d = new Date(isoFull);
+  d.setMinutes(0, 0, 0);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
+}
+
+// ─── Render helpers ───────────────────────────────────────────────────────────
+function renderFactors(factors) {
+  return `<div class="factors">${factors.map(f =>
+    `<span class="factor ${f.rating}">${f.label}</span>`
+  ).join('')}</div>`;
+}
+
+function renderSingle(wx, sunEvent, sunLabel, arriveOffset, title) {
+  if (!wx) return `<div class="card"><p style="color:#8b949e">No data for this window.</p></div>`;
+
+  const { score, factors, explanation } = scoreConditions(wx);
+  const verdict = verdictFromScore(score);
+  const arriveTime = fmtTime(subtractMinutes(sunEvent, arriveOffset));
+  const eventTime  = fmtTime(sunEvent);
+
+  return `
+    <div class="verdict-banner ${verdict.cls}">
+      <div class="verdict-emoji">${verdict.emoji}</div>
+      <div class="verdict-label">${verdict.label}</div>
+      <div class="verdict-score">${score}% inversion likelihood</div>
+    </div>
+
+    <div class="card">
+      <h3>${title} Timing</h3>
+      <div class="timing-row">
+        <span class="timing-label">${sunLabel}</span>
+        <span class="timing-value">${eventTime}</span>
+      </div>
+      <div class="timing-row">
+        <span class="timing-label">Arrive by</span>
+        <span class="timing-value">${arriveTime}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Conditions at ${sunLabel}</h3>
+      <div class="wx-grid" style="margin-bottom:12px;">
+        <div class="wx-item"><div class="wx-label">Low cloud</div><div class="wx-value">${wx.lowCloud}%</div></div>
+        <div class="wx-item"><div class="wx-label">Wind</div><div class="wx-value">${wx.wind} mph</div></div>
+        <div class="wx-item"><div class="wx-label">Rain chance</div><div class="wx-value">${wx.rain}%</div></div>
+        <div class="wx-item"><div class="wx-label">Temp</div><div class="wx-value">${wx.temp}°F</div></div>
+      </div>
+      ${renderFactors(factors)}
+    </div>
+
+    <div class="card">
+      <h3>Why</h3>
+      <p class="explanation">${explanation}</p>
+    </div>`;
+}
+
+function renderNoon(data) {
+  const todaySunset   = data.daily.sunset[0];
+  const tomorrowSunrise = data.daily.sunrise[1];
+
+  const sunsetWx   = extractHour(data, nearestHour(todaySunset));
+  const sunriseWx  = extractHour(data, nearestHour(tomorrowSunrise));
+
+  const sunsetResult  = sunsetWx  ? scoreConditions(sunsetWx)  : null;
+  const sunriseResult = sunriseWx ? scoreConditions(sunriseWx) : null;
+
+  const sunsetVerdict  = sunsetResult  ? verdictFromScore(sunsetResult.score)  : null;
+  const sunriseVerdict = sunriseResult ? verdictFromScore(sunriseResult.score) : null;
+
+  // Recommendation
+  let rec = '';
+  if (sunsetResult && sunriseResult) {
+    if (sunsetResult.score >= sunriseResult.score + 15) {
+      rec = `Tonight's sunset looks better — head up this evening.`;
+    } else if (sunriseResult.score >= sunsetResult.score + 15) {
+      rec = `Tomorrow's sunrise looks better — set that alarm.`;
+    } else if (sunsetResult.score >= 50 || sunriseResult.score >= 50) {
+      rec = `Both windows are similar. Sunrise typically offers calmer winds; sunset is more convenient.`;
+    } else {
+      rec = `Neither window looks great today. Check again closer to sunset.`;
+    }
+  }
+
+  return `
+    <div class="card">
+      <h3>Compare Windows</h3>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <h4>🌅 Tonight Sunset</h4>
+          <div class="compare-score" style="color:${scoreColor(sunsetResult?.score)}">${sunsetResult ? sunsetResult.score + '%' : '—'}</div>
+          <div class="compare-verdict">${sunsetVerdict ? sunsetVerdict.emoji + ' ' + sunsetVerdict.label : ''}</div>
+        </div>
+        <div class="compare-col">
+          <h4>🌄 Tomorrow Sunrise</h4>
+          <div class="compare-score" style="color:${scoreColor(sunriseResult?.score)}">${sunriseResult ? sunriseResult.score + '%' : '—'}</div>
+          <div class="compare-verdict">${sunriseVerdict ? sunriseVerdict.emoji + ' ' + sunriseVerdict.label : ''}</div>
+        </div>
+      </div>
+      ${rec ? `<p class="explanation" style="margin-top:12px;">${rec}</p>` : ''}
+    </div>
+
+    <div class="card">
+      <h3>Tonight Sunset Detail — ${fmtTime(todaySunset)}</h3>
+      ${sunsetWx ? `<div class="wx-grid" style="margin-bottom:12px;">
+        <div class="wx-item"><div class="wx-label">Low cloud</div><div class="wx-value">${sunsetWx.lowCloud}%</div></div>
+        <div class="wx-item"><div class="wx-label">Wind</div><div class="wx-value">${sunsetWx.wind} mph</div></div>
+        <div class="wx-item"><div class="wx-label">Rain</div><div class="wx-value">${sunsetWx.rain}%</div></div>
+        <div class="wx-item"><div class="wx-label">Temp</div><div class="wx-value">${sunsetWx.temp}°F</div></div>
+      </div>${renderFactors(sunsetResult.factors)}` : '<p style="color:#8b949e">No data.</p>'}
+    </div>
+
+    <div class="card">
+      <h3>Tomorrow Sunrise Detail — ${fmtTime(tomorrowSunrise)}</h3>
+      ${sunriseWx ? `<div class="wx-grid" style="margin-bottom:12px;">
+        <div class="wx-item"><div class="wx-label">Low cloud</div><div class="wx-value">${sunriseWx.lowCloud}%</div></div>
+        <div class="wx-item"><div class="wx-label">Wind</div><div class="wx-value">${sunriseWx.wind} mph</div></div>
+        <div class="wx-item"><div class="wx-label">Rain</div><div class="wx-value">${sunriseWx.rain}%</div></div>
+        <div class="wx-item"><div class="wx-label">Temp</div><div class="wx-value">${sunriseWx.temp}°F</div></div>
+      </div>${renderFactors(sunriseResult.factors)}` : '<p style="color:#8b949e">No data.</p>'}
+    </div>`;
+}
+
+function scoreColor(score) {
+  if (!score && score !== 0) return '#8b949e';
+  if (score >= 70) return '#3fb950';
+  if (score >= 50) return '#d29922';
+  if (score >= 30) return '#e3812c';
+  return '#f85149';
+}
+
+// ─── Render results ───────────────────────────────────────────────────────────
+function renderResults(data) {
+  const el = document.getElementById('results');
+
+  if (currentTab === 'noon') {
+    el.innerHTML = renderNoon(data);
+    return;
+  }
+
+  let sunEvent, sunLabel, arriveOffset, title;
+
+  if (currentTab === 'tonight') {
+    sunEvent     = data.daily.sunset[0];
+    sunLabel     = 'Sunset';
+    arriveOffset = 45;
+    title        = 'Sunset';
+  } else {
+    sunEvent     = data.daily.sunrise[1]; // tomorrow
+    sunLabel     = 'Sunrise';
+    arriveOffset = 30;
+    title        = 'Sunrise';
+  }
+
+  const wx = extractHour(data, nearestHour(sunEvent));
+  el.innerHTML = renderSingle(wx, sunEvent, sunLabel, arriveOffset, title);
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+async function runCheck() {
+  const btn     = document.getElementById('checkBtn');
+  const spinner = document.getElementById('spinner');
+  const errBox  = document.getElementById('errorBox');
+  const results = document.getElementById('results');
+
+  btn.disabled = true;
+  spinner.classList.add('show');
+  errBox.classList.add('hidden');
+  results.innerHTML = '';
+
+  try {
+    const data = await fetchWeather();
+    weatherCache = data;
+    renderResults(data);
+  } catch (err) {
+    errBox.classList.remove('hidden');
+    errBox.textContent = `Error fetching weather: ${err.message}. Check your connection and try again.`;
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('show');
+  }
+}
+</script>
+</body>
+</html>
