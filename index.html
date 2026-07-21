@@ -591,6 +591,7 @@ function renderElevationBar(loc, wx) {
   const lclPct = lcl != null ? pct(lcl) : null;
   const bandL = pct(loc.greenFt[0]);
   const bandW = pct(loc.greenFt[1]) - pct(loc.greenFt[0]);
+  const bandCenter = pct((loc.greenFt[0] + loc.greenFt[1]) / 2);
 
   return `
     <div class="card">
@@ -602,6 +603,7 @@ function renderElevationBar(loc, wx) {
         <div class="elev-bar-track">
           <div style="position:absolute; top:0; bottom:0; left:${bandL}%; width:${bandW}%; background:rgba(35,134,54,0.35); border-radius:3px;"></div>
         </div>
+        <div class="elev-marker-label" style="top:-16px; left:${bandCenter}%; transform:translateX(-50%); color:#3fb950; font-weight:600;">✓ sweet spot</div>
         <div class="elev-marker loc" style="left:${locPct}%">
           <div class="elev-marker-label" style="top:-18px; left:-10px;">${loc.name}</div>
           <div class="elev-marker-label" style="bottom:-18px; left:-10px;">${loc.elevFt.toLocaleString()} ft</div>
@@ -612,8 +614,12 @@ function renderElevationBar(loc, wx) {
           <div class="elev-marker-label" style="bottom:-18px; left:6px; color:#79c0ff;">${lcl.toLocaleString()} ft</div>
         </div>` : ''}
       </div>
+      ${lclPct === null ? `
+      <p style="text-align:center; font-size:0.79rem; color:#8b949e; margin-top:12px;">
+        🔭 No marine layer this hour — no fog base to place on the bar yet.
+      </p>` : ''}
       <p style="font-size:0.75rem; color:#8b949e; margin-top:8px;">
-        Green band = the fog-base sweet spot for ${loc.name} (${loc.greenFt[0].toLocaleString()}–${loc.greenFt[1].toLocaleString()} ft). LCL is derived from temperature and dewpoint — a guide, not a precise ceiling. Verify with the live cameras and Windy.
+        The <span style="color:#3fb950;">green band</span> is where the fog base needs to sit for a good ${loc.name} shot (${loc.greenFt[0].toLocaleString()}–${loc.greenFt[1].toLocaleString()} ft). When there's a marine layer, the <span style="color:#79c0ff;">🌫️ fog base</span> marker appears — if it lands in the green, you're above the layer. LCL is derived from temperature and dewpoint — a guide, not a precise ceiling. Verify with the live cameras and Windy.
       </p>
     </div>`;
 }
