@@ -657,15 +657,21 @@ function scoreConditions(wx, loc) {
   else if (r <= 20) { score += 10; factors.push({ label: `Rain ${r}%`, rating: 'ok'   }); }
   else              { score +=  0; factors.push({ label: `Rain ${r}%`, rating: 'bad'  }); }
 
-  // 5. Fog base position relative to your viewpoint (fog-base factor + score adj)
+  // 5. Fog base position — the crux of whether you can shoot the inversion here.
+  //    This GATES the final likelihood: calm, clear, dry weather can't make a
+  //    good inversion shot if there's no layer, or if you're stuck inside it.
   if (status.status === 'green') {
     score = Math.min(100, score + 10);
     factors.push({ label: `Fog base ${lclFt.toLocaleString()} ft — below you`, rating: 'good' });
   } else if (status.status === 'yellow') {
     factors.push({ label: `Fog base ${lclFt.toLocaleString()} ft — at the edge`, rating: 'ok' });
   } else if (status.status === 'red') {
-    if (lc >= 50) score = Math.max(0, score - 10);
+    // A layer exists, but this spot is in it / socked in — no shot from here.
+    score = Math.min(score, 35);
     factors.push({ label: `Fog base ${lclFt.toLocaleString()} ft — ${status.reason === 'low' ? 'socked in' : 'above you'}`, rating: 'bad' });
+  } else { // 'none' — no marine layer at all
+    score = Math.min(score, 15);
+    factors.push({ label: 'No marine layer', rating: 'bad' });
   }
 
   // Explanation
