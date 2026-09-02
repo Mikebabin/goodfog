@@ -34,6 +34,10 @@ def create_app(settings: Settings | None = None, poller: Poller | None = None) -
             yield
         finally:
             task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
             await client.aclose()
 
     app = FastAPI(title="Good Fog", lifespan=lifespan)
