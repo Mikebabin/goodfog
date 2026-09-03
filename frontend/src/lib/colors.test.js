@@ -8,3 +8,13 @@ it('maps score bands to colors', () => {
   expect(scoreColor(29)).toBe('#f85149');
   expect(scoreColor(null)).toBe('#8b949e');
 });
+
+import { textColorFor } from './colors.js';
+
+it('picks dark text only on the bright amber band', () => {
+  expect(textColorFor('#d29922')).toBe('#0d1117'); // amber
+  expect(textColorFor('#3fb950')).toBe('#ffffff'); // green
+  expect(textColorFor('#e3812c')).toBe('#ffffff'); // orange
+  expect(textColorFor('#f85149')).toBe('#ffffff'); // red
+  expect(textColorFor('#8b949e')).toBe('#ffffff'); // grey (no data)
+});

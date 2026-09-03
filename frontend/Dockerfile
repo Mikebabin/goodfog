@@ -3,6 +3,7 @@ FROM node:22-alpine AS build
 WORKDIR /src/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts
+COPY data /src/data
 COPY frontend .
 # Coolify passes SOURCE_COMMIT as a build arg (see docker-compose.yml); the footer shows the short sha.
 ARG SOURCE_COMMIT=dev

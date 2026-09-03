@@ -40,6 +40,10 @@ export default defineConfig({
       },
     }),
   ],
-  server: { proxy: { '/api': 'http://localhost:8000' } },
+  resolve: { alias: { '@data': path.resolve(here, '../data') } },
+  server: {
+    fs: { allow: [path.resolve(here, '..')] },
+    proxy: { '/api': 'http://localhost:8000' },
+  },
   test: { environment: 'node', include: ['src/**/*.test.js'] },
 });

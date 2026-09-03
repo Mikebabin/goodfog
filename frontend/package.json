@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "d3-geo": "3.1.1",
     "svelte": "5.56.10"
   },
   "devDependencies": {
