@@ -4,7 +4,6 @@ import { scoreColor } from './colors.js';
 /** Fixed map frame around the eight viewpoints (lon/lat). The layout never shifts with data. */
 export const FRAME = { west: -122.66, south: 37.76, east: -122.4, north: 37.96 };
 export const DOT_R = 12; // px
-const NO_DATA = '#8b949e';
 
 // Clockwise ring (d3-geo spherical winding): a counter-clockwise ring means "everything but".
 const framePolygon = {
@@ -68,7 +67,7 @@ export function placeDots(viewpoints, tab, projection) {
   const dots = viewpoints.map((vp) => {
     const [x, y] = projection([vp.lon, vp.lat]);
     const score = scoreForTab(vp, tab);
-    return { id: vp.id, name: vp.name, x, y, score, color: score == null ? NO_DATA : scoreColor(score) };
+    return { id: vp.id, name: vp.name, x, y, score, color: scoreColor(score) };
   });
   return nudgeApart(dots);
 }

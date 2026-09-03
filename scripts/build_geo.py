@@ -44,7 +44,9 @@ def fetch(url: str, params: dict) -> list[dict]:
     r = httpx.get(url, params=params, timeout=120)
     r.raise_for_status()
     data = r.json()
-    if data.get("exceededTransferLimit"):
+    if "features" not in data:
+        raise SystemExit(f"{url}: unexpected response: {str(data)[:200]}")
+    if data.get("exceededTransferLimit") or data.get("properties", {}).get("exceededTransferLimit"):
         raise SystemExit(f"{url}: exceededTransferLimit; narrow the query")
     return data["features"]
 
@@ -72,7 +74,7 @@ def build() -> dict:
     land = land.difference(unary_union([shape(f["geometry"]) for f in water]).intersection(frame))
     land = land.simplify(TOLERANCE_DEG, preserve_topology=True)
 
-    parts = [p for p in getattr(land, "geoms", [land]) if p.area > MIN_AREA_DEG2]
+    parts = [p for p in getattr(land, "geoms", [land]) if p.geom_type == "Polygon" and p.area > MIN_AREA_DEG2]
     features = [
         {"type": "Feature", "properties": {}, "geometry": round_coords(mapping(orient(p, sign=-1.0)))}
         for p in parts

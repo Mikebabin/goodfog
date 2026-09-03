@@ -18,7 +18,7 @@
 </script>
 
 <div class="wrap" bind:clientWidth={width}>
-  <svg viewBox="0 0 {width} {height}" {width} {height} role="img" aria-label="Map of viewpoints colored by inversion likelihood">
+  <svg viewBox="0 0 {width} {height}" {width} {height} role="group" aria-label="Map of viewpoints colored by inversion likelihood">
     <rect x="0" y="0" {width} {height} class="water" />
     {#each land as d, i (i)}
       <path {d} class="land" />

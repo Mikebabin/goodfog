@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import coastRaw from '@data/coast.geojson?raw';
-  import Map from './components/Map.svelte';
+  import LikelihoodMap from './components/Map.svelte';
   import { fetchSnapshot } from './lib/api.js';
   import Header from './components/Header.svelte';
   import LocationPicker from './components/LocationPicker.svelte';
@@ -75,7 +75,7 @@
   {/if}
 
   {#if snapshot && vp}
-    <Map {coast} {viewpoints} {selectedId} {tab} onselect={select} />
+    <LikelihoodMap {coast} {viewpoints} {selectedId} {tab} onselect={select} />
     <LocationPicker {viewpoints} {selectedId} onselect={select} />
     <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
 
