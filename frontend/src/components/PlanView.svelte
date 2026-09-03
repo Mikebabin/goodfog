@@ -1,15 +1,19 @@
 <script>
   import { fmtTime } from '../lib/time.js';
   import { scoreColor } from '../lib/colors.js';
+  import { fmtDrive } from '../lib/drive.js';
   import { bestWindow, planSummary } from '../lib/plan.js';
   import ConditionsCard from './ConditionsCard.svelte';
 
-  let { vp, windows } = $props();
+  let { vp, windows, drive = null } = $props();
   const best = $derived(bestWindow(windows, vp.results));
 </script>
 
 <div class="card">
   <h3>Best Window for {vp.name}</h3>
+  {#if drive}
+    <p class="drive">🚗 {fmtDrive(drive.seconds)} drive · no traffic</p>
+  {/if}
   <div class="compare-grid">
     {#each windows as w (w.id)}
       {@const r = vp.results[w.id]}
@@ -39,4 +43,5 @@
   .compare-verdict { font-size: 0.75rem; }
   .when { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
   .summary { margin-top: 12px; }
+  .drive { font-size: 0.8rem; color: var(--muted); margin: -6px 0 10px; }
 </style>

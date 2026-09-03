@@ -1,5 +1,7 @@
 <script>
-  let { viewpoints, selectedId, onselect } = $props();
+  import { fmtDrive } from '../lib/drive.js';
+
+  let { viewpoints, selectedId, onselect, drives = null } = $props();
 </script>
 
 <p class="loc-label">Choose your viewpoint</p>
@@ -8,6 +10,9 @@
     <button class="loc-btn" class:active={vp.id === selectedId} onclick={() => onselect(vp.id)}>
       <div class="loc-name">{vp.name}</div>
       <div class="loc-elev">{vp.desc}</div>
+      {#if drives}
+        <div class="loc-drive">{drives[vp.id] ? `~${fmtDrive(drives[vp.id].seconds)} drive` : '—'}</div>
+      {/if}
     </button>
   {/each}
 </div>
@@ -20,4 +25,5 @@
   .loc-btn.active { border-color: var(--blue); background: #0d2045; }
   .loc-name { font-size: 0.88rem; font-weight: 600; }
   .loc-elev { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .loc-drive { font-size: 0.75rem; color: var(--blue); margin-top: 4px; }
 </style>

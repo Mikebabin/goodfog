@@ -7,7 +7,7 @@
   import ShotNotesCard from './ShotNotesCard.svelte';
   import WhyCard from './WhyCard.svelte';
 
-  let { vp, win, result } = $props();
+  let { vp, win, result, drive = null } = $props();
 </script>
 
 {#if !result}
@@ -16,7 +16,7 @@
   <VerdictBanner verdict={result.verdict} score={result.score} />
   <ElevationBanner elevation={result.elevation} />
   <ElevationBar {vp} lclFt={result.lcl_ft} />
-  <TimingCard {vp} {win} />
+  <TimingCard {vp} {win} {drive} />
   <ConditionsCard title={`Conditions at ${win.sun_label}`} {result} />
   <ShotNotesCard {vp} />
   <WhyCard explanation={result.explanation} />
