@@ -113,11 +113,10 @@ Ported 1:1 from the JS. Names and thresholds:
 - `verdict(score) -> Verdict(label, emoji, cls)`: ≥70 Go for it!, ≥50 Worth a try,
   ≥30 Maybe next time, else Stay home.
 - `elevation_verdict(vp, hour) -> ElevationVerdict(cls, icon, title, detail)`.
-- `windows(daily, now) -> list[Window]`: `tonight` = `sunset[0]` (label Sunset, arrive 45 min
-  before), `tomorrow_am` = `sunrise[1]` (Sunrise, 30), `tomorrow_pm` = `sunset[1]`
-  (Sunset, 45). `hour` is the ISO hour string truncated to `:00` in the forecast timezone.
-  `now` is accepted for future use (e.g. rolling past sunset) but v1 mirrors the original
-  and always uses index 0/1.
+- `build_windows(sunrise, sunset) -> list[Window]`: `tonight` = `sunset[0]` (label Sunset,
+  arrive 45 min before), `tomorrow_am` = `sunrise[1]` (Sunrise, 30), `tomorrow_pm` =
+  `sunset[1]` (Sunset, 45). `hour` is the ISO hour string truncated to `:00` in the forecast
+  timezone.
 
 ### 4.3 Provider (`providers/open_meteo.py`)
 
@@ -150,6 +149,7 @@ Any exception propagates to the poller, which logs and keeps the old snapshot.
          "status": {"kind": "green", "reason": null},
          "factors": [{"label": "Low cloud 80%", "rating": "good"}, ...],
          "explanation": "...",
+         "lcl_ft": 1394,
          "elevation": {"cls": "above", "icon": "🏔️", "title": "Above the fog layer", "detail": "..."},
          "wx": {"low_cloud": 80, "mid_cloud": 5, "high_cloud": 0, "wind_mph": 4, "rain_pct": 0,
                 "temp_f": 61, "dewpoint_f": 55, "lcl_ft": 1394}
@@ -225,7 +225,7 @@ Dark theme and card layout copied from the current CSS, max width 520 px.
   truncation.
 - `test_open_meteo.py`: parse a saved multi-coordinate response fixture (`tests/fixtures/`),
   map by index, handle nulls in `dewpoint_2m`.
-- `test_parity.py`: a small table of `(viewpoint, hour inputs) → expected score/status/
+- `test_score.py`: a small table of `(viewpoint, hour inputs) → expected score/status/
   verdict` computed by running the original JS once during the port (values pasted in).
 - `test_snapshot.py`: `to_dict()` shape; null result when hour missing.
 - `test_app.py`: `/api/health` and `/api/snapshot` via `httpx.AsyncClient` with a stubbed

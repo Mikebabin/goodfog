@@ -1,9 +1,10 @@
+import asyncio
 import json
 from pathlib import Path
 
 import httpx
 
-from goodfog.app import create_app
+from goodfog.app import build_poller, create_app
 from goodfog.config import Settings
 from goodfog.poller import Poller
 from goodfog.providers.open_meteo import parse_open_meteo
@@ -24,6 +25,37 @@ def _client(poller):
     app = create_app(_settings(), poller=poller)
     app.state.poller = poller  # lifespan does not run under ASGITransport
     return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t")
+
+
+class FakePoller:
+    def __init__(self):
+        self.snapshot = None
+
+    async def run_forever(self):
+        await asyncio.Event().wait()
+
+    def health(self):
+        return {"status": "warming_up"}
+
+
+async def test_lifespan_starts_and_stops_poller():
+    fake = FakePoller()
+    app = create_app(_settings(), poller=fake)
+
+    async def run():
+        async with app.router.lifespan_context(app):
+            assert app.state.poller is fake
+
+    await asyncio.wait_for(run(), timeout=5)
+
+
+async def test_build_poller_configures_provider():
+    settings = _settings()
+    async with httpx.AsyncClient() as client:
+        poller = build_poller(settings, client)
+    assert isinstance(poller, Poller)
+    assert len(poller.provider.points) == 8
+    assert poller.provider.models == settings.open_meteo_models
 
 
 async def test_snapshot_503_while_warming_up():

@@ -3,7 +3,8 @@ import pytest
 from goodfog.fog import Status, elevation_verdict, fmt_ft, hour_from_values, score, verdict
 from goodfog.viewpoints import viewpoint_by_id
 
-# (viewpoint, temp_c, dew_c, low, mid, high, wind_kmh, rain) -> expected, computed by the original index.html JS.
+# (viewpoint, temp_c, dew_c, low, mid, high, wind_kmh, rain) -> expected, computed by the JS in
+# the original single-file app (`index.html` at commit 9f1aace).
 PARITY = [
     ("east-peak", 14.2, 11.1, 85, 5, 0, 6.0, 0,
      100, Status("green"), "Go for it!", "Above the fog layer",

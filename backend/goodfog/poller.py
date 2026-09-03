@@ -4,7 +4,6 @@ import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 
-from .providers import ProviderError
 from .snapshot import build_snapshot
 from .viewpoints import VIEWPOINTS
 
@@ -27,9 +26,9 @@ class Poller:
         now = now or datetime.now(timezone.utc)
         try:
             forecasts = await self.provider.fetch()
-        except ProviderError as e:
-            self.last_error = str(e)
-            log.warning("poll failed, keeping previous snapshot: %s", e)
+        except Exception as e:
+            self.last_error = f"{type(e).__name__}: {e}"
+            log.exception("poll failed, keeping previous snapshot")
             return
         self.snapshot = build_snapshot(VIEWPOINTS, forecasts, now=now, app_version=self.app_version, commit=self.commit)
         self.generated_at = now

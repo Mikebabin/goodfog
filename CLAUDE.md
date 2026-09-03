@@ -4,7 +4,7 @@ Marin marine-layer inversion checker for photographers. Design spec: `docs/super
 New contributor? Read `docs/GETTING-STARTED.md`.
 
 ## Layout
-- `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `snapshot.py`, `poller.py`, `app.py`.
+- `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `snapshot.py`, `poller.py`, `app.py`, `config.py` (settings).
 - `frontend/` — Svelte 5 + Vite PWA. Pure helpers in `src/lib/` (tested), components in `src/components/`.
 
 ## Commands

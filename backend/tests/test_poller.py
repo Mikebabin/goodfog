@@ -1,7 +1,11 @@
+import asyncio
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
+from goodfog import poller as poller_module
 from goodfog.poller import Poller
 from goodfog.providers import ProviderError
 from goodfog.providers.open_meteo import parse_open_meteo
@@ -39,6 +43,52 @@ async def test_failure_keeps_previous_snapshot_and_records_error():
     await p.poll_once(now=T0 + timedelta(minutes=15))
     assert p.snapshot is not None and p.generated_at == T0
     assert "boom" in p.last_error
+
+
+async def test_poll_once_records_non_provider_exception():
+    class BadProvider:
+        async def fetch(self):
+            raise RuntimeError("bad")
+
+    p = Poller(BadProvider(), poll_minutes=15, app_version="0.1.0", commit="dev")
+    p.snapshot = {"prev": True}
+    p.generated_at = T0
+    await p.poll_once(now=T0 + timedelta(minutes=15))
+    assert p.snapshot == {"prev": True}
+    assert p.generated_at == T0
+    assert p.last_error is not None and "RuntimeError" in p.last_error
+    assert p.health(now=T0)["last_error"] == p.last_error
+
+
+async def test_run_forever_survives_failing_poll_once(monkeypatch):
+    class FlakyProvider:
+        def __init__(self):
+            self.calls = 0
+
+        async def fetch(self):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("boom")
+            return parse_open_meteo(FIXTURE, 8)
+
+    provider = FlakyProvider()
+    p = Poller(provider, poll_minutes=15, app_version="0.1.0", commit="dev")
+
+    sleep_calls = 0
+
+    async def fake_sleep(seconds):
+        nonlocal sleep_calls
+        sleep_calls += 1
+        if sleep_calls >= 2:
+            raise asyncio.CancelledError()
+
+    monkeypatch.setattr(poller_module.asyncio, "sleep", fake_sleep)
+
+    with pytest.raises(asyncio.CancelledError):
+        await p.run_forever()
+
+    assert provider.calls == 2
+    assert p.snapshot is not None
 
 
 async def test_health_stale_after_three_missed_polls():

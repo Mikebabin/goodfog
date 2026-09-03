@@ -1,6 +1,8 @@
 import tomllib
 from pathlib import Path
 
+import pytest
+
 from goodfog.config import Settings
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +37,20 @@ def test_commit_from_build_commit_only():
 
 def test_blank_app_version_falls_back_to_pyproject():
     assert Settings.from_env({"APP_VERSION": "  "}).app_version == _pyproject_version()
+
+
+def test_poll_minutes_zero_raises():
+    with pytest.raises(ValueError, match="POLL_MINUTES"):
+        Settings.from_env({"POLL_MINUTES": "0"})
+
+
+def test_poll_minutes_non_numeric_raises():
+    with pytest.raises(ValueError, match="POLL_MINUTES"):
+        Settings.from_env({"POLL_MINUTES": "abc"})
+
+
+def test_poll_minutes_valid():
+    assert Settings.from_env({"POLL_MINUTES": "5"}).poll_minutes == 5
 
 
 def test_frontend_and_backend_versions_match():

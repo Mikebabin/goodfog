@@ -24,7 +24,12 @@
   let tab = $state('tonight'); // tonight | tomorrow_am | tomorrow_pm | plan
 
   const viewpoints = $derived(snapshot?.viewpoints ?? []);
-  const vp = $derived(viewpoints.find((v) => v.id === selectedId) ?? viewpoints[0] ?? null);
+  const vp = $derived(
+    viewpoints.find((v) => v.id === selectedId) ??
+      viewpoints.find((v) => v.id === DEFAULT_ID) ??
+      viewpoints[0] ??
+      null
+  );
   const tabs = $derived([...(snapshot?.windows ?? []).map((w) => ({ id: w.id, label: w.tab })), { id: 'plan', label: '🔭 Plan' }]);
   const window_ = $derived(vp?.windows.find((w) => w.id === tab) ?? null);
 

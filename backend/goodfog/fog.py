@@ -1,4 +1,5 @@
-"""Pure fog-inversion math ported 1:1 from the original index.html. No I/O, no clock."""
+"""Pure fog-inversion math ported 1:1 from the original single-file app
+(`index.html` at commit 9f1aace). No I/O, no clock."""
 from __future__ import annotations
 
 import math
@@ -203,6 +204,8 @@ def score(vp: Viewpoint, hour: Hour) -> Result:
         parts.append("Save it for a better day.")
         explanation = "".join(parts)
 
+    # The JS left a trailing space on two branches above (the total>=30 "red/high" and
+    # "red/low" fog-base sentences); HTML whitespace collapsing hid it there, so strip it here.
     return Result(score=total, factors=tuple(factors), explanation=explanation.strip(), lcl_ft=lcl, status=status)
 
 
