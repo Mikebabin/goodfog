@@ -117,6 +117,7 @@ Ported 1:1 from the JS. Names and thresholds:
   arrive 45 min before), `tomorrow_am` = `sunrise[1]` (Sunrise, 30), `tomorrow_pm` =
   `sunset[1]` (Sunset, 45). `hour` is the ISO hour string truncated to `:00` in the forecast
   timezone.
+  *Superseded by `2026-09-02-three-day-outlook-design.md`: seven windows, day fields, days × halves Plan grid.*
 
 ### 4.3 Provider (`providers/open_meteo.py`)
 
@@ -158,6 +159,7 @@ Any exception propagates to the poller, which logs and keeps the old snapshot.
   ]
 }
 ```
+  *Superseded by `2026-09-02-three-day-outlook-design.md`: seven windows, day fields, days × halves Plan grid.*
 
 Each viewpoint carries its own `windows` (built from its own sun times, which differ by up
 to a minute between points) — the top-level `windows` is used by the frontend only for tab
@@ -193,6 +195,7 @@ Dark theme and card layout copied from the current CSS, max width 520 px.
   - `colors.js`: `scoreColor(score)`.
 - **Plan tab**: three-column comparison with the best window outlined, then a per-window
   conditions card, as today.
+  *Superseded by `2026-09-02-three-day-outlook-design.md`: seven windows, day fields, days × halves Plan grid.*
 - **Verify links**: Windy (clouds, fog, wind), fog.today, yr.no, ALERTCalifornia Tam East /
   Tam West / Muir Beach — same URLs.
 - **Footer**: `v{version} · {commit}` from `/api/health`, same as Mrs. Toasty.

@@ -54,7 +54,7 @@ Paste:
 > Start the backend and the frontend dev server, then give me the local URL.
 
 Open the URL it gives you (normally http://localhost:5173). You should see the viewpoint
-picker, the Tonight / Tom. AM / Tom. PM / Plan tabs, and the verdict card for East Peak.
+picker, the Tonight / Tomorrow / Fri / Sat / Plan tabs, and the verdict card for East Peak.
 The live site is https://goodfog.babins.net — your local copy is the same app.
 
 ## 6. Pick something to work on

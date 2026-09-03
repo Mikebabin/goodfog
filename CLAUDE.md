@@ -1,11 +1,11 @@
 # Good Fog — project rules for Claude Code
 
-Marin marine-layer inversion checker for photographers. Design spec: `docs/superpowers/specs/2026-09-02-goodfog-design.md`.
+Marin marine-layer inversion checker for photographers. Design spec: `docs/superpowers/specs/2026-09-02-goodfog-design.md` · three-day outlook: `docs/superpowers/specs/2026-09-02-three-day-outlook-design.md`.
 New contributor? Read `docs/GETTING-STARTED.md`.
 
 ## Layout
 - `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `drive.py` (pure drive helpers + cache), `providers/ors.py`, `snapshot.py`, `poller.py`, `app.py`, `config.py` (settings).
-- `frontend/` — Svelte 5 + Vite PWA. Pure helpers in `src/lib/` (tested, node env), components in `src/components/` (smoke-tested with `@testing-library/svelte`; each `*.test.js` opts into jsdom with a `// @vitest-environment jsdom` header and uses the hand-written snapshot fragments in `src/components/fixtures.js`).
+- `frontend/` — Svelte 5 + Vite PWA. Pure helpers in `src/lib/` (tested, node env), components in `src/components/` (smoke-tested with `@testing-library/svelte`; each `*.test.js` opts into jsdom with a `// @vitest-environment jsdom` header and uses the hand-written snapshot fragments in `src/components/fixtures.js`). Navigation is a day strip (Tonight · Tomorrow · Fri · Sat · Plan) plus a Sunrise/Sunset toggle; window grouping lives in `src/lib/days.js`.
 - `data/` — generated coastline GeoJSON for the map; regenerate with `uv run --project backend python scripts/build_geo.py`, never hand-edit (a test guards winding and the frame).
 
 ## Commands
@@ -20,6 +20,7 @@ New contributor? Read `docs/GETTING-STARTED.md`.
 - Write or update tests with every change (TDD: failing test first). Fog math in `fog.py` stays pure: no I/O, no clock; `now` is passed in.
 - The scoring rubric, thresholds, and copy were ported 1:1 from the original single-file app; `tests/test_score.py` holds a parity table computed from that JS. Changing behavior means changing the table deliberately, in the same PR.
 - The frontend never computes scores; it renders `/api/snapshot`. Only small pure helpers (bar geometry, time formatting, plan best-window) live in `src/lib/`.
+- Window ids are `tonight, d1_am, d1_pm, d2_am, d2_pm, d3_am, d3_pm`; `outlook` (day ≥ 2) is set by the backend and only ever changes labels, never scores. Refresh the Open-Meteo fixture with `uv run --project backend python scripts/fetch_fixture.py`.
 - npm: pin exact versions, no `^`/`~`, commit `package-lock.json`, `npm ci --ignore-scripts`. Python: `uv`, exact pins in `pyproject.toml`.
 - Secrets only via env vars: `ORS_API_KEY` (optional; drive times hidden without it, never logged or sent to the browser). Non-secret config: `POLL_MINUTES`, `OPEN_METEO_MODELS`. Never commit `.env`.
 - Feet, °F, mph everywhere; feet are shown with thousands separators.

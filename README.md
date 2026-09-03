@@ -2,8 +2,7 @@
 
 **Good Fog** tells you whether a Bay Area fog *inversion* is worth photographing from a
 given Marin Headlands or Mt. Tamalpais viewpoint, and whether you'll be standing **above**
-the marine layer or lost **inside** it — for tonight's sunset, tomorrow's sunrise, and
-tomorrow's sunset.
+the marine layer or lost **inside** it — for tonight's sunset and every sunrise and sunset through three days out. Day 2 and 3 are labelled as a lower-confidence outlook.
 
 Live: https://goodfog.babins.net
 
