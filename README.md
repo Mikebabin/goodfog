@@ -18,6 +18,7 @@ Live: https://goodfog.babins.net
    fog base: **above the layer**, **right at the edge**, or **inside the fog / socked in**.
 4. **Likelihood score** — combines low-cloud coverage, wind, clear sky above, and rain into
    an inversion-likelihood %. The fog-base position gates the score.
+5. **Map** — the eight viewpoints on a tile-free SVG map (US Census land/water polygons, bundled), each dot colored by its likelihood for the selected window. Tap a dot to select it.
 
 The numbers are a **heuristic guide, not a measurement** — always confirm against the live
 cameras and Windy before setting the 4:30am alarm.
@@ -39,6 +40,7 @@ cameras and Windy before setting the 4:30am alarm.
 
 - `backend/` — Python 3.12 + FastAPI. Polls Open-Meteo, does all the fog math, serves `/api/snapshot`.
 - `frontend/` — Svelte 5 + Vite PWA served by nginx. Renders the snapshot; no scoring in the browser.
+- `data/` — coastline GeoJSON built by `scripts/build_geo.py` from Census TIGERweb; committed.
 - Deployed with Docker Compose on Coolify; merging `main` deploys.
 
 ## Running it

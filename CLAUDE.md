@@ -6,6 +6,7 @@ New contributor? Read `docs/GETTING-STARTED.md`.
 ## Layout
 - `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `snapshot.py`, `poller.py`, `app.py`, `config.py` (settings).
 - `frontend/` — Svelte 5 + Vite PWA. Pure helpers in `src/lib/` (tested), components in `src/components/`.
+- `data/` — generated coastline GeoJSON for the map; regenerate with `uv run --project backend python scripts/build_geo.py`, never hand-edit (a test guards winding and the frame).
 
 ## Commands
 - Backend tests: `cd backend && uv run pytest`
