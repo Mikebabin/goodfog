@@ -25,7 +25,11 @@ def _result(vp: Viewpoint, hour: Hour | None) -> dict | None:
     }
 
 
-def _viewpoint(vp: Viewpoint, fc: Forecast, windows) -> dict:
+def _viewpoint(vp: Viewpoint, fc: Forecast) -> dict:
+    # Sunrise/sunset differ by up to a minute across points; the original app used the
+    # selected spot's own sun times, so each viewpoint builds its windows from its own
+    # forecast's daily block rather than sharing one set across all viewpoints.
+    windows = build_windows(list(fc.sunrise), list(fc.sunset))
     return {
         "id": vp.id,
         "name": vp.name,
@@ -37,6 +41,7 @@ def _viewpoint(vp: Viewpoint, fc: Forecast, windows) -> dict:
         "composition": vp.composition,
         "access": vp.access,
         "cam_tip": vp.cam_tip,
+        "windows": [asdict(w) for w in windows],
         "results": {w.id: _result(vp, fc.hour_at(w.hour)) for w in windows},
     }
 
@@ -44,13 +49,13 @@ def _viewpoint(vp: Viewpoint, fc: Forecast, windows) -> dict:
 def build_snapshot(
     viewpoints, forecasts: list[Forecast], *, now: datetime, app_version: str, commit: str
 ) -> dict:
-    # Sunrise/sunset differ by seconds across these points; use the first viewpoint's daily block
-    # for the shared window definitions, exactly as the original app used the selected spot's.
+    # Top-level windows come from the first forecast and are used by the frontend only for
+    # tab ids/labels; each viewpoint below carries its own windows built from its own sun times.
     windows = build_windows(list(forecasts[0].sunrise), list(forecasts[0].sunset))
     return {
         "app_version": app_version,
         "commit": commit,
         "generated_at": now.isoformat(timespec="seconds"),
         "windows": [asdict(w) for w in windows],
-        "viewpoints": [_viewpoint(vp, fc, windows) for vp, fc in zip(viewpoints, forecasts, strict=True)],
+        "viewpoints": [_viewpoint(vp, fc) for vp, fc in zip(viewpoints, forecasts, strict=True)],
     }

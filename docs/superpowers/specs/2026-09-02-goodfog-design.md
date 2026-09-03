@@ -137,12 +137,13 @@ Any exception propagates to the poller, which logs and keeps the old snapshot.
   "generated_at": "2026-09-02T23:15:04-07:00",
   "windows": [
     {"id": "tonight", "title": "Tonight Sunset", "tab": "Tonight", "sun_label": "Sunset",
-     "sun_event": "2026-09-02T19:32", "arrive_by": "2026-09-02T18:47", "hour": "2026-09-02T20:00"},
+     "sun_event": "2026-09-02T19:32", "arrive_by": "2026-09-02T18:47", "hour": "2026-09-02T19:00"},
     {"id": "tomorrow_am", ...}, {"id": "tomorrow_pm", ...}
   ],
   "viewpoints": [
     {"id": "east-peak", "name": "East Peak", "elev_ft": 2571, "desc": "...", "green_ft": [200, 2400],
      "yellow_ft": [2400, 2571], "dawn_gated": true, "composition": "...", "access": "...", "cam_tip": "...",
+     "windows": [...],
      "results": {
        "tonight": {
          "score": 72, "verdict": {"label": "Go for it!", "emoji": "🚀", "cls": "go"},
@@ -158,7 +159,9 @@ Any exception propagates to the poller, which logs and keeps the old snapshot.
 }
 ```
 
-A window result is `null` when the forecast hour is missing. Times are local
+Each viewpoint carries its own `windows` (built from its own sun times, which differ by up
+to a minute between points) — the top-level `windows` is used by the frontend only for tab
+ids/labels. A window result is `null` when the forecast hour is missing. Times are local
 (America/Los_Angeles) ISO strings without offset, exactly as Open-Meteo returns them, so
 the frontend formats them with no timezone math.
 

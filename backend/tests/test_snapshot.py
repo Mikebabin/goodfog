@@ -29,6 +29,8 @@ def test_viewpoint_entry_shape():
     assert v["green_ft"] == [200, 2400] and v["yellow_ft"] == [2400, 2571] and v["dawn_gated"] is True
     for key in ("desc", "composition", "access", "cam_tip"):
         assert isinstance(v[key], str) and v[key]
+    assert "windows" in v
+    assert set(v["windows"][0]) == {"id", "title", "tab", "sun_label", "sun_event", "arrive_by", "hour"}
     r = v["results"]["tonight"]
     assert set(r) == {"score", "verdict", "status", "factors", "explanation", "elevation", "lcl_ft", "wx"}
     assert set(r["verdict"]) == {"label", "emoji", "cls"}
@@ -37,6 +39,18 @@ def test_viewpoint_entry_shape():
     assert set(r["elevation"]) == {"cls", "icon", "title", "detail"}
     assert set(r["wx"]) == {"low_cloud", "mid_cloud", "high_cloud", "wind_mph", "rain_pct", "temp_f", "dewpoint_f", "lcl_ft"}
     assert 0 <= r["score"] <= 100
+
+
+def test_each_viewpoint_gets_windows_from_its_own_daily_block():
+    fcs = parse_open_meteo(FIXTURE, 8)
+    s = _snap()
+    for vp_entry, fc in zip(s["viewpoints"], fcs, strict=True):
+        ws = vp_entry["windows"]
+        assert [w["id"] for w in ws] == ["tonight", "tomorrow_am", "tomorrow_pm"]
+        assert ws[0]["sun_event"] == fc.sunset[0]
+        assert ws[1]["sun_event"] == fc.sunrise[1]
+        assert ws[2]["sun_event"] == fc.sunset[1]
+        assert set(vp_entry["results"]) == {w["id"] for w in ws}
 
 
 def test_missing_hour_gives_null_result():

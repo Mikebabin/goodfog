@@ -26,7 +26,7 @@
   const viewpoints = $derived(snapshot?.viewpoints ?? []);
   const vp = $derived(viewpoints.find((v) => v.id === selectedId) ?? viewpoints[0] ?? null);
   const tabs = $derived([...(snapshot?.windows ?? []).map((w) => ({ id: w.id, label: w.tab })), { id: 'plan', label: '🔭 Plan' }]);
-  const window_ = $derived(snapshot?.windows.find((w) => w.id === tab) ?? null);
+  const window_ = $derived(vp?.windows.find((w) => w.id === tab) ?? null);
 
   function select(id) {
     selectedId = id;
@@ -70,7 +70,7 @@
     <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
 
     {#if tab === 'plan'}
-      <PlanView {vp} windows={snapshot.windows} />
+      <PlanView {vp} windows={vp.windows} />
     {:else if window_}
       <WindowView {vp} win={window_} result={vp.results[window_.id]} />
     {/if}
