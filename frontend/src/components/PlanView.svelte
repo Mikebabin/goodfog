@@ -57,7 +57,7 @@
   .row-head { padding-right: 4px; }
   .cell { background: var(--bg); border-radius: 8px; padding: 8px 4px; border: 1px solid transparent; text-align: center; color: inherit; font-family: inherit; cursor: pointer; position: relative; min-height: 64px; }
   .cell.best { border-color: #238636; }
-  .cell.outlook { opacity: 0.8; }
+  .cell.outlook { opacity: 0.8; padding-top: 14px; }
   .cell.empty { color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: default; }
   .compare-score { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; }
   .compare-verdict { font-size: 0.66rem; line-height: 1.2; }
