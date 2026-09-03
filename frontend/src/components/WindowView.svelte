@@ -14,6 +14,9 @@
   <div class="card"><p class="explanation">No data for this window.</p></div>
 {:else}
   <VerdictBanner verdict={result.verdict} score={result.score} />
+  {#if win.outlook}
+    <p class="outlook">Outlook · 2+ days out, lower confidence</p>
+  {/if}
   <ElevationBanner elevation={result.elevation} />
   <ElevationBar {vp} lclFt={result.lcl_ft} />
   <TimingCard {vp} {win} {drive} />
@@ -21,3 +24,7 @@
   <ShotNotesCard {vp} />
   <WhyCard explanation={result.explanation} />
 {/if}
+
+<style>
+  .outlook { text-align: center; font-size: 0.75rem; color: var(--muted); margin: -6px 0 12px; }
+</style>
