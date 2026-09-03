@@ -32,6 +32,23 @@ describe('PlanView', () => {
     expect(getByText('Best bet: Tonight at 7:32 PM — 72% likelihood. Fog base ~1,394 ft vs East Peak at 2,571 ft.')).toBeTruthy();
   });
 
+  it('drops the fog-base clause from the summary when the best window has no marine layer', () => {
+    const vp = vpWith({
+      tonight: result({ score: 30 }),
+      tomorrow_am: result({ score: 55, lcl_ft: null }),
+      tomorrow_pm: null,
+    });
+    const { getByText } = render(PlanView, { vp, windows });
+    expect(getByText('Best bet: Tomorrow AM at 6:48 AM — 55% likelihood.')).toBeTruthy();
+  });
+
+  it('writes the no-great-windows summary when every window result is null', () => {
+    const vp = vpWith({ tonight: null, tomorrow_am: null, tomorrow_pm: null });
+    const { container, getByText } = render(PlanView, { vp, windows });
+    expect(getByText(/No great windows in the next two days for East Peak/)).toBeTruthy();
+    expect(container.querySelectorAll('.compare-col.best')).toHaveLength(1); // earliest wins the tie
+  });
+
   it('writes the no-great-windows summary when every score is under 40', () => {
     const vp = vpWith({
       tonight: result({ score: 12 }),

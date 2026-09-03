@@ -1,6 +1,7 @@
 /**
- * Hand-written snapshot fragments matching design spec §4.4. Copy and thresholds mirror
- * backend/goodfog/fog.py (verdict, elevation_verdict); these are shapes, not parity tests.
+ * Hand-written snapshot fragments matching design spec §4.4, with copy taken verbatim from
+ * backend/goodfog/fog.py (verdict, elevation_verdict) and viewpoints.py (East Peak). Shapes for
+ * component rendering only; score/copy parity lives in backend/tests/test_score.py.
  */
 
 export const eastPeak = {
@@ -25,10 +26,10 @@ export const verdicts = {
 };
 
 export const elevations = {
-  clear: { cls: 'clear', icon: '🔭', title: 'No marine layer', detail: 'East Peak at 2,571 ft. Low cloud is thin — no significant marine layer expected.' },
-  above: { cls: 'above', icon: '🏔️', title: 'Above the fog layer', detail: 'Fog base sits around 1,394 ft — comfortably below East Peak (2,571 ft).' },
-  edge: { cls: 'edge', icon: '⚡', title: 'Right at the edge', detail: 'Fog base near 2,450 ft — close to East Peak (2,571 ft).' },
-  below: { cls: 'below', icon: '🌫️', title: 'Socked in', detail: 'Fog base ~150 ft. Consider a higher viewpoint.' },
+  clear: { cls: 'clear', icon: '🔭', title: 'No marine layer', detail: 'East Peak at 2,571 ft. Low cloud is thin — no significant marine layer expected. Clear views, but no inversion to shoot.' },
+  above: { cls: 'above', icon: '🏔️', title: 'Above the fog layer', detail: 'Fog base sits around 1,394 ft — comfortably below East Peak (2,571 ft). You should be looking down onto the layer. Highest vantage — 360° sea of cloud over all of Marin and SF. Trees/ridgeline as foreground.' },
+  edge: { cls: 'edge', icon: '⚡', title: 'Right at the edge', detail: 'Fog base near 2,450 ft — close to East Peak (2,571 ft). The layer may swirl around you: dramatic but unpredictable. Check the live cameras before committing.' },
+  below: { cls: 'below', icon: '🌫️', title: 'Socked in', detail: 'Fog base ~150 ft. Fog base extremely low — a very deep layer could still reach you. Consider a higher viewpoint.' },
 };
 
 const wx = (over = {}) => ({
@@ -36,20 +37,24 @@ const wx = (over = {}) => ({
   temp_f: 61, dewpoint_f: 55, lcl_ft: 1394, ...over,
 });
 
-/** A full window result. `score` picks the verdict; `lcl_ft` null means no marine layer. */
-export function result({ score, lcl_ft = 1394, elevation = elevations.above } = {}) {
+/**
+ * A full window result. `score` picks the verdict; `lcl_ft` null means no marine layer, which
+ * also flips status, elevation, and the low-cloud factor to what the backend would emit.
+ */
+export function result({ score, lcl_ft = 1394, elevation } = {}) {
   const verdict = score >= 70 ? verdicts.go : score >= 50 ? verdicts.try : score >= 30 ? verdicts.maybe : verdicts.no;
+  const layer = lcl_ft != null;
   return {
     score,
     verdict,
-    status: { kind: lcl_ft == null ? 'none' : 'green', reason: null },
+    status: { kind: layer ? 'green' : 'none', reason: null },
     factors: [
-      { label: 'Low cloud 80%', rating: 'good' },
+      layer ? { label: 'Low cloud 80%', rating: 'good' } : { label: 'Low cloud 10%', rating: 'bad' },
       { label: 'Wind 4 mph', rating: 'good' },
     ],
     explanation: 'Strong marine layer signal.',
     lcl_ft,
-    elevation,
-    wx: wx({ lcl_ft }),
+    elevation: elevation ?? (layer ? elevations.above : elevations.clear),
+    wx: wx({ lcl_ft, low_cloud: layer ? 80 : 10 }),
   };
 }
