@@ -64,3 +64,28 @@ class DriveCache:
 
     def __len__(self) -> int:
         return len(self._items)
+
+
+MATRIX_DAILY_LIMIT = 400  # ORS free plan is 500/day; leave headroom
+
+
+class DailyBudget:
+    """Counts upstream calls per UTC day; `now` is a UNIX timestamp (seconds). Pure."""
+
+    def __init__(self, limit: int) -> None:
+        self.limit = limit
+        self._day: int | None = None
+        self._used = 0
+
+    def _roll(self, now: float) -> None:
+        day = int(now // 86400)
+        if day != self._day:
+            self._day, self._used = day, 0
+
+    def allow(self, now: float) -> bool:
+        self._roll(now)
+        return self._used < self.limit
+
+    def spend(self, now: float) -> None:
+        self._roll(now)
+        self._used += 1

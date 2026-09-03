@@ -7,7 +7,7 @@ import pytest
 
 from goodfog.app import build_poller, create_app
 from goodfog.config import Settings
-from goodfog.drive import DriveCache
+from goodfog.drive import DailyBudget, DriveCache
 from goodfog.poller import Poller
 from goodfog.providers.open_meteo import parse_open_meteo
 from goodfog.providers.ors import Leg, OrsProvider, Place, RoutingError
@@ -120,9 +120,9 @@ class FakeOrs:
         return [Leg(seconds=600 + 60 * i, meters=10000 + 1000 * i) for i in range(len(dests))]
 
 
-def _drive_client(ors, cache=None):
+def _drive_client(ors, cache=None, budget=None):
     poller = Poller(FakeProvider(), 15, "0.1.0", "abc1234")
-    app = create_app(_settings(), poller=poller, ors=ors, drive_cache=cache)
+    app = create_app(_settings(), poller=poller, ors=ors, drive_cache=cache, drive_budget=budget)
     app.state.poller = poller
     return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t")
 
@@ -199,3 +199,14 @@ async def test_lifespan_builds_ors_only_when_key_set():
 
     await asyncio.wait_for(run(keyed, True), timeout=5)
     await asyncio.wait_for(run(_settings(), False), timeout=5)
+
+
+async def test_drive_503_when_daily_budget_exhausted_and_cache_still_serves():
+    ors = FakeOrs()
+    async with _drive_client(ors, DriveCache(), budget=DailyBudget(limit=1)) as c:
+        ok = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+        cached = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+        blocked = await c.post("/api/drive", json={"lat": 37.8, "lon": -122.5})
+    assert ok.status_code == 200 and cached.status_code == 200
+    assert blocked.status_code == 503 and blocked.json() == {"detail": "routing_unavailable"}
+    assert ors.matrix_calls == 1

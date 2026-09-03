@@ -1,6 +1,6 @@
 import pytest
 
-from goodfog.drive import DriveCache, build_drive_response, round_origin, validate_origin
+from goodfog.drive import DailyBudget, DriveCache, build_drive_response, round_origin, validate_origin
 from goodfog.providers.ors import Leg
 from goodfog.viewpoints import VIEWPOINTS
 
@@ -64,3 +64,13 @@ def test_cache_put_refreshes_existing_key():
     c.put((3.0, 3.0), {"c": 1}, now=3.0)  # evicts (2.0, 2.0), the oldest
     assert c.get((1.0, 1.0), now=4.0) == {"a": 2}
     assert c.get((2.0, 2.0), now=4.0) is None
+
+
+def test_daily_budget_allows_until_limit_then_resets_next_day():
+    b = DailyBudget(limit=2)
+    t0 = 1_700_000_000.0  # some UTC instant
+    assert b.allow(t0); b.spend(t0)
+    assert b.allow(t0 + 1); b.spend(t0 + 1)
+    assert not b.allow(t0 + 2)
+    next_day = (int(t0 // 86400) + 1) * 86400.0
+    assert b.allow(next_day)

@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from .config import Settings
-from .drive import DriveCache, build_drive_response, round_origin, validate_origin
+from .drive import MATRIX_DAILY_LIMIT, DailyBudget, DriveCache, build_drive_response, round_origin, validate_origin
 from .poller import Poller
 from .providers.open_meteo import OpenMeteoProvider
 from .providers.ors import OrsProvider, RoutingError
@@ -45,6 +45,7 @@ def create_app(
     poller: Poller | None = None,
     ors: OrsProvider | None = None,
     drive_cache: DriveCache | None = None,
+    drive_budget: DailyBudget | None = None,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
 
@@ -69,6 +70,7 @@ def create_app(
     app.add_middleware(GZipMiddleware, minimum_size=500)
     app.state.ors = ors  # tests inject a fake; production builds one in lifespan when a key is set
     app.state.drive_cache = drive_cache or DriveCache()
+    app.state.drive_budget = drive_budget or DailyBudget(MATRIX_DAILY_LIMIT)
 
     @app.get("/api/snapshot")
     async def snapshot():
@@ -112,11 +114,16 @@ def create_app(
         cached = app.state.drive_cache.get(key, now)
         if cached is not None:
             return cached
+        wall = time.time()
+        if not app.state.drive_budget.allow(wall):
+            log.warning("drive lookup skipped: daily matrix budget exhausted")
+            return _unavailable()
         try:
             legs = await provider.matrix(key, DEST_POINTS)
         except RoutingError as e:
             log.warning("drive lookup failed: %s", e)  # never log coordinates
             return _unavailable()
+        app.state.drive_budget.spend(wall)
         body = build_drive_response(VIEWPOINTS, legs, key)
         app.state.drive_cache.put(key, body, now)
         return body
