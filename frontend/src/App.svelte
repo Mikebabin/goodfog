@@ -13,6 +13,7 @@
   import OriginPicker from './components/OriginPicker.svelte';
   import { getPosition } from './lib/geolocate.js';
   import { loadOrigin, saveOrigin } from './lib/origin.js';
+  import { makeLatest } from './lib/latest.js';
 
   const coast = JSON.parse(coastRaw); // Vite only auto-parses .json, so load .geojson as text
 
@@ -35,17 +36,17 @@
   let driveBusy = $state(false);
   let driveError = $state(null);
   let drivesRequested = false;      // first snapshot triggers one fetch for a remembered origin
-  let driveReq = 0;                 // generation counter; a superseded fetch must not write state
+  const driveLatest = makeLatest(); // generation counter; a superseded fetch must not write state
 
   const driveEnabled = $derived(snapshot?.features?.drive === true);
   const selectedDrive = $derived(driveEnabled && drives && vp ? (drives[vp.id] ?? null) : null);
 
   async function loadDrives(o) {
-    const id = ++driveReq;
+    const id = driveLatest.begin();
     if (!o) { drives = null; driveBusy = false; return; }
     driveBusy = true;
     const r = await fetchDrive(o.lat, o.lon);
-    if (id !== driveReq) return;    // origin changed or was cleared while this was in flight
+    if (!driveLatest.isCurrent(id)) return;    // origin changed or was cleared while this was in flight
     driveBusy = false;
     if (r.status === 'ok') { drives = r.data.drives; driveError = null; }
     else { drives = null; driveError = 'Drive times unavailable right now'; }
