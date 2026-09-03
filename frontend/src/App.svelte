@@ -35,14 +35,17 @@
   let driveBusy = $state(false);
   let driveError = $state(null);
   let drivesRequested = false;      // first snapshot triggers one fetch for a remembered origin
+  let driveReq = 0;                 // generation counter; a superseded fetch must not write state
 
   const driveEnabled = $derived(snapshot?.features?.drive === true);
   const selectedDrive = $derived(driveEnabled && drives && vp ? (drives[vp.id] ?? null) : null);
 
   async function loadDrives(o) {
-    if (!o) { drives = null; return; }
+    const id = ++driveReq;
+    if (!o) { drives = null; driveBusy = false; return; }
     driveBusy = true;
     const r = await fetchDrive(o.lat, o.lon);
+    if (id !== driveReq) return;    // origin changed or was cleared while this was in flight
     driveBusy = false;
     if (r.status === 'ok') { drives = r.data.drives; driveError = null; }
     else { drives = null; driveError = 'Drive times unavailable right now'; }
@@ -52,6 +55,7 @@
     origin = o;
     saveOrigin(globalThis.localStorage, o);
     driveError = null;
+    drivesRequested = true;
     loadDrives(o);
   }
 
