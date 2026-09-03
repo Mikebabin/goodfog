@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import coastRaw from '@data/coast.geojson?raw';
   import LikelihoodMap from './components/Map.svelte';
-  import { fetchSnapshot } from './lib/api.js';
+  import { fetchSnapshot, fetchDrive, geocode } from './lib/api.js';
   import Header from './components/Header.svelte';
   import LocationPicker from './components/LocationPicker.svelte';
   import Tabs from './components/Tabs.svelte';
@@ -10,6 +10,9 @@
   import PlanView from './components/PlanView.svelte';
   import VerifyLinks from './components/VerifyLinks.svelte';
   import Footer from './components/Footer.svelte';
+  import OriginPicker from './components/OriginPicker.svelte';
+  import { getPosition } from './lib/geolocate.js';
+  import { loadOrigin, saveOrigin } from './lib/origin.js';
 
   const coast = JSON.parse(coastRaw); // Vite only auto-parses .json, so load .geojson as text
 
@@ -26,6 +29,53 @@
   let error = $state(null);
   let selectedId = $state(loadSelected());
   let tab = $state('tonight'); // tonight | tomorrow_am | tomorrow_pm | plan
+
+  let origin = $state(loadOrigin(globalThis.localStorage));
+  let drives = $state(null);        // {[vpId]: {seconds, meters} | null} once fetched
+  let driveBusy = $state(false);
+  let driveError = $state(null);
+  let drivesRequested = false;      // first snapshot triggers one fetch for a remembered origin
+
+  const driveEnabled = $derived(snapshot?.features?.drive === true);
+  const selectedDrive = $derived(driveEnabled && drives && vp ? (drives[vp.id] ?? null) : null);
+
+  async function loadDrives(o) {
+    if (!o) { drives = null; return; }
+    driveBusy = true;
+    const r = await fetchDrive(o.lat, o.lon);
+    driveBusy = false;
+    if (r.status === 'ok') { drives = r.data.drives; driveError = null; }
+    else { drives = null; driveError = 'Drive times unavailable right now'; }
+  }
+
+  function setOrigin(o) {
+    origin = o;
+    saveOrigin(globalThis.localStorage, o);
+    driveError = null;
+    loadDrives(o);
+  }
+
+  async function submitAddress(text) {
+    driveBusy = true;
+    driveError = null;
+    const r = await geocode(text);
+    driveBusy = false;
+    if (r.status === 'ok') setOrigin(r.place);
+    else if (r.status === 'no_match') driveError = 'Address not found';
+    else driveError = 'Drive times unavailable right now';
+  }
+
+  async function useMyLocation() {
+    driveBusy = true;
+    driveError = null;
+    try {
+      const { lat, lon } = await getPosition();
+      setOrigin({ label: 'My location', lat, lon });
+    } catch {
+      driveBusy = false;
+      driveError = 'Location blocked or unavailable';
+    }
+  }
 
   const viewpoints = $derived(snapshot?.viewpoints ?? []);
   const vp = $derived(
@@ -48,6 +98,10 @@
       snapshot = r.data;
       status = 'ok';
       error = null;
+      if (!drivesRequested && r.data.features?.drive && origin) {
+        drivesRequested = true;
+        loadDrives(origin);
+      }
     } else if (!snapshot) {
       status = r.status;
       error = r.error ?? null;
@@ -76,13 +130,16 @@
 
   {#if snapshot && vp}
     <LikelihoodMap {coast} {viewpoints} {selectedId} {tab} onselect={select} />
-    <LocationPicker {viewpoints} {selectedId} onselect={select} />
+    {#if driveEnabled}
+      <OriginPicker {origin} busy={driveBusy} error={driveError} onsubmit={submitAddress} onlocate={useMyLocation} onclear={() => setOrigin(null)} />
+    {/if}
+    <LocationPicker {viewpoints} {selectedId} onselect={select} drives={driveEnabled ? drives : null} />
     <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
 
     {#if tab === 'plan'}
-      <PlanView {vp} windows={vp.windows} />
+      <PlanView {vp} windows={vp.windows} drive={selectedDrive} />
     {:else if window_}
-      <WindowView {vp} win={window_} result={vp.results[window_.id]} />
+      <WindowView {vp} win={window_} result={vp.results[window_.id]} drive={selectedDrive} />
     {/if}
   {/if}
 
