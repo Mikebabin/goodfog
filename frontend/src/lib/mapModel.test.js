@@ -34,10 +34,10 @@ describe('projection', () => {
 });
 
 describe('scoreForTab', () => {
-  const v = vp('a', -122.5, 37.85, { tonight: r(15), tomorrow_am: r(35), tomorrow_pm: null });
+  const v = vp('a', -122.5, 37.85, { tonight: r(15), d1_am: r(35), d1_pm: null });
   it('reads the window score', () => {
     expect(scoreForTab(v, 'tonight')).toBe(15);
-    expect(scoreForTab(v, 'tomorrow_pm')).toBeNull();
+    expect(scoreForTab(v, 'd1_pm')).toBeNull();
   });
   it('plan uses the best window and ignores nulls', () => {
     expect(scoreForTab(v, 'plan')).toBe(35);
