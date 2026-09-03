@@ -74,6 +74,8 @@ can watch the changed files in GitHub Desktop as it goes.
   to `main` deploys to the live site automatically within a few minutes.
 - **Never commit secrets.** If Claude needs a value locally, it goes in a `.env` file,
   which is ignored by git.
+- **Optional key:** `ORS_API_KEY` (free OpenRouteService account) turns on drive times.
+  Without it the feature is simply hidden — nothing breaks.
 - **Tests must pass** before a PR is opened. Ask Claude to run them if unsure.
 - Ask Claude to explain anything — "explain how the fog-base (LCL) status and the
   likelihood score are computed in backend/goodfog/fog.py" or "what does this PR

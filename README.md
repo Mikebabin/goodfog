@@ -64,7 +64,7 @@ Tests: `cd backend && uv run pytest` · `cd frontend && npm test`.
 | `OPEN_METEO_MODELS` | `best_match` | Open-Meteo model selection |
 | `ORS_API_KEY` | _(unset)_ | Optional [OpenRouteService](https://openrouteservice.org) key. Enables "drive time from your location"; the feature is hidden without it. Free plan is plenty. |
 
-Put secrets in a local `.env` (git-ignored); in production set them in the Coolify app.
+Put secrets in a local `.env` (git-ignored; `docker compose` reads it automatically). The bare `uv run uvicorn` command does not read `.env` — export the variable in your shell instead. In production set them in the Coolify app.
 
 ## Verify before you go
 

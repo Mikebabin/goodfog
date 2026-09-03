@@ -23,6 +23,7 @@
         placeholder="Your address or neighborhood"
         aria-label="Your starting address"
         autocomplete="street-address"
+        maxlength="200"
         disabled={busy}
       />
       <button type="submit" disabled={busy || !text.trim()}>Go</button>
