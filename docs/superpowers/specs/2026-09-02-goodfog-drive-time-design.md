@@ -219,6 +219,6 @@ round-trip, remove on null), `api.test.js` additions (tagged results for 404/503
 
 ## 7. Deployment
 
-Add `ORS_API_KEY` to the Coolify app's environment (Mike does this in the UI; the API
-token can't be used for secrets by policy here). Without it the feature stays hidden, so
-the deploy is safe to ship before the key exists.
+Add `ORS_API_KEY` to the Coolify app's environment (Mike pastes it in the Coolify UI so
+the value never passes through this session). Without it the feature stays hidden, so the
+deploy is safe to ship before the key exists.
