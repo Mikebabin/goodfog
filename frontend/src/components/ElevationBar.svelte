@@ -40,7 +40,7 @@
   .axis { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
   .elev-bar-wrap { margin: 12px 0 4px; position: relative; height: 48px; }
   .elev-bar-track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 6px; background: var(--panel2); border-radius: 3px; }
-  .band { position: absolute; top: 0; bottom: 0; background: rgba(35, 134, 54, 0.35); border-radius: 3px; }
+  .band { position: absolute; top: 0; bottom: 0; background: var(--band); border-radius: 3px; }
   .elev-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--bg); }
   .elev-marker.loc { background: var(--text-strong); }
   .elev-marker.ceil { background: var(--fog); }

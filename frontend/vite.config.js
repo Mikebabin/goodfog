@@ -24,6 +24,9 @@ export default defineConfig({
         name: 'Good Fog',
         short_name: 'Good Fog',
         description: 'Will you be above the marine layer or inside it?',
+        // Dark on purpose: the Web App Manifest has no per-colour-scheme theme_color, so the
+        // installed app's splash and task-switcher chrome stay dark even for light-mode users.
+        // The in-page <meta name="theme-color"> tags in index.html do follow the scheme.
         theme_color: '#0d1117',
         background_color: '#0d1117',
         display: 'standalone',

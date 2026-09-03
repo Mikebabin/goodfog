@@ -1,3 +1,13 @@
+/** Verdict class for a score, so text can be themed via CSS tokens (--score-go etc.) rather than an inline hex. */
+export function scoreClass(score) {
+  if (score == null) return 'none';
+  if (score >= 70) return 'go';
+  if (score >= 50) return 'try';
+  if (score >= 30) return 'maybe';
+  return 'no';
+}
+
+/** Map dot fill. Fixed hex on purpose: dots carry their own text contrast via textColorFor. */
 export function scoreColor(score) {
   if (score == null) return '#8b949e';
   if (score >= 70) return '#3fb950';

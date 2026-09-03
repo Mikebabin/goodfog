@@ -45,7 +45,7 @@
   .top { margin-top: 8px; }
   .resource-grid { display: flex; flex-direction: column; gap: 8px; }
   .resource-link { display: flex; align-items: center; gap: 10px; background: var(--panel2); border-radius: 8px; padding: 10px 12px; text-decoration: none; color: var(--text); font-size: 0.86rem; transition: background 0.15s; }
-  .resource-link:hover { background: #2d333b; }
+  .resource-link:hover { background: var(--hover); }
   .resource-icon { font-size: 1.1rem; flex-shrink: 0; }
   .resource-info { flex: 1; }
   .resource-name { font-weight: 600; }

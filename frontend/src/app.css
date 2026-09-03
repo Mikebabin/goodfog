@@ -1,10 +1,18 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/*
+ * Dark is the base palette (bare :root), so anything that can't state a preference gets it.
+ * Light mode overrides the same token set under prefers-color-scheme. Every colour in the
+ * app must be a token here; src/lib/theme.test.js keeps the two blocks identical in shape
+ * and rejects raw hex/rgba in component <style> blocks.
+ */
 :root {
+  color-scheme: dark;
   --bg: #0d1117;
   --panel: #161b22;
   --panel2: #21262d;
   --border: #30363d;
+  --hover: #2d333b;
   --text: #e6edf3;
   --text-strong: #f0f6fc;
   --muted: #8b949e;
@@ -13,6 +21,58 @@
   --green-text: #3fb950;
   --blue: #58a6ff;
   --fog: #79c0ff;
+  --water: #0b1a2b;
+  --band: rgba(35, 134, 54, 0.35);
+  --loc-active-bg: #0d2045;
+  --warn: #e3812c;
+  --err: #f85149;
+  /* verdict banners */
+  --go-bg: #0d4429;    --go-border: #238636;
+  --try-bg: #3d2400;   --try-border: #9e6a03;
+  --maybe-bg: #2d1b00; --maybe-border: #7d4e00;
+  --no-bg: #3d0d12;    --no-border: #8b2020;
+  /* elevation banners */
+  --above-bg: #0d2d0d; --above-border: #238636;
+  --edge-bg: #2d2200;  --edge-border: #9e6a03;
+  --below-bg: #1a1a2e; --below-border: #4a4a8a;
+  /* factor chips, error box, score text */
+  --factor-good: #238636; --factor-ok: #9e6a03; --factor-bad: #8b2020;
+  --error-bg: #3d0d12; --error-border: #8b2020; --error-text: #ffa7a7;
+  --score-go: #3fb950; --score-try: #d29922; --score-maybe: #e3812c; --score-no: #f85149; --score-none: #8b949e;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --panel: #f6f8fa;
+    --panel2: #eaeef2;
+    --border: #d0d7de;
+    --hover: #d8dee4;
+    --text: #1f2328;
+    --text-strong: #0d1117;
+    --muted: #59636e;
+    --body: #24292f;
+    --green: #1a7f37;
+    --green-text: #1a7f37;
+    --blue: #0969da;
+    --fog: #0550ae;
+    --water: #cfe4f7;
+    --band: rgba(26, 127, 55, 0.3);
+    --loc-active-bg: #ddf4ff;
+    --warn: #bc4c00;
+    --err: #cf222e;
+    --go-bg: #dafbe1;    --go-border: #1a7f37;
+    --try-bg: #fff8c5;   --try-border: #9a6700;
+    --maybe-bg: #ffe8cc; --maybe-border: #bc4c00;
+    --no-bg: #ffebe9;    --no-border: #cf222e;
+    --above-bg: #dafbe1; --above-border: #1a7f37;
+    --edge-bg: #fff8c5;  --edge-border: #9a6700;
+    --below-bg: #e6e6f5; --below-border: #6e6ea8;
+    --factor-good: #1a7f37; --factor-ok: #9a6700; --factor-bad: #cf222e;
+    --error-bg: #ffebe9; --error-border: #cf222e; --error-text: #a40e26;
+    --score-go: #1a7f37; --score-try: #9a6700; --score-maybe: #bc4c00; --score-no: #cf222e; --score-none: #59636e;
+  }
 }
 
 body {
@@ -62,16 +122,16 @@ body {
 
 .factors { display: flex; flex-wrap: wrap; gap: 8px; }
 .factor { background: var(--panel2); border-radius: 20px; padding: 5px 11px; font-size: 0.8rem; }
-.factor.good { border-left: 3px solid #238636; }
-.factor.ok   { border-left: 3px solid #9e6a03; }
-.factor.bad  { border-left: 3px solid #8b2020; }
+.factor.good { border-left: 3px solid var(--factor-good); }
+.factor.ok   { border-left: 3px solid var(--factor-ok); }
+.factor.bad  { border-left: 3px solid var(--factor-bad); }
 
 .error-box {
-  background: #3d0d12;
-  border: 1px solid #8b2020;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
   border-radius: 10px;
   padding: 16px;
   font-size: 0.88rem;
-  color: #ffa7a7;
+  color: var(--error-text);
   margin-bottom: 16px;
 }
