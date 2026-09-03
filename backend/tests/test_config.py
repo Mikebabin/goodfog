@@ -35,3 +35,11 @@ def test_commit_from_build_commit_only():
 
 def test_blank_app_version_falls_back_to_pyproject():
     assert Settings.from_env({"APP_VERSION": "  "}).app_version == _pyproject_version()
+
+
+def test_frontend_and_backend_versions_match():
+    # Footer shows package.json's version; /api/health shows pyproject's. Bump both together.
+    import json
+
+    pkg = json.loads((ROOT / "frontend" / "package.json").read_text())
+    assert pkg["version"] == _pyproject_version()
