@@ -15,7 +15,7 @@
   import { getPosition } from './lib/geolocate.js';
   import { loadOrigin, saveOrigin } from './lib/origin.js';
   import { makeLatest } from './lib/latest.js';
-  import { groupByDay, windowForDay } from './lib/days.js';
+  import { dayTabId, groupByDay, groupForTabId, tabsFor, windowForDay } from './lib/days.js';
 
   const coast = JSON.parse(coastRaw); // Vite only auto-parses .json, so load .geojson as text
 
@@ -92,14 +92,14 @@
       null
   );
   const groups = $derived(groupByDay(snapshot?.windows ?? []));
-  const tabs = $derived([...groups.map((g) => ({ id: `day${g.day}`, label: g.label })), { id: 'plan', label: '🔭 Plan' }]);
+  const tabs = $derived(tabsFor(groups));
   const window_ = $derived(vp?.windows.find((w) => w.id === tab) ?? null);
   const group = $derived(window_ ? groups.find((g) => g.day === window_.day) ?? null : null);
-  const activeTab = $derived(tab === 'plan' ? 'plan' : group ? `day${group.day}` : null);
+  const activeTab = $derived(tab === 'plan' ? 'plan' : group ? dayTabId(group.day) : null);
 
   function selectTab(id) {
     if (id === 'plan') { tab = 'plan'; return; }
-    const g = groups.find((x) => `day${x.day}` === id);
+    const g = groupForTabId(groups, id);
     if (g) tab = windowForDay(g, window_).id;
   }
 

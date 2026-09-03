@@ -18,3 +18,16 @@ export function windowForDay(group, current) {
   const wantAm = current?.sun_label === 'Sunrise';
   return (wantAm ? group.am : group.pm) ?? group.pm ?? group.am;
 }
+
+/** Tab strip id for a day group. */
+export const dayTabId = (day) => `day${day}`;
+
+/** Tab strip entries: one per day group plus Plan. */
+export function tabsFor(groups) {
+  return [...groups.map((g) => ({ id: dayTabId(g.day), label: g.label })), { id: 'plan', label: '🔭 Plan' }];
+}
+
+/** The day group a tab id names, or null for 'plan' / unknown ids. */
+export function groupForTabId(groups, id) {
+  return groups.find((g) => dayTabId(g.day) === id) ?? null;
+}

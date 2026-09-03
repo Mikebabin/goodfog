@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupByDay, windowForDay } from './days.js';
+import { dayTabId, groupByDay, groupForTabId, tabsFor, windowForDay } from './days.js';
 
 const w = (id, day, day_label, sun_label) => ({ id, day, day_label, sun_label, outlook: day >= 2 });
 const windows = [
@@ -37,5 +37,26 @@ describe('windowForDay', () => {
   });
   it('prefers sunset when there is no current window', () => {
     expect(windowForDay(g[1], null).id).toBe('d1_pm');
+  });
+});
+
+describe('tabsFor', () => {
+  it('yields one tab per day group plus Plan, in order', () => {
+    const g = groupByDay(windows);
+    const tabs = tabsFor(g);
+    expect(tabs.map((t) => t.id)).toEqual(['day0', 'day1', 'day2', 'day3', 'plan']);
+    expect(tabs.map((t) => t.label)).toEqual(['Tonight', 'Tomorrow', 'Fri', 'Sat', '🔭 Plan']);
+  });
+});
+
+describe('groupForTabId', () => {
+  it('round-trips dayTabId back to its group', () => {
+    const g = groupByDay(windows);
+    expect(groupForTabId(g, dayTabId(2))).toBe(g[2]);
+  });
+  it('returns null for plan and unknown ids', () => {
+    const g = groupByDay(windows);
+    expect(groupForTabId(g, 'plan')).toBeNull();
+    expect(groupForTabId(g, 'nope')).toBeNull();
   });
 });
