@@ -63,3 +63,10 @@ def test_missing_hour_gives_null_result():
 
 def test_snapshot_is_json_serializable():
     json.dumps(_snap())
+
+
+def test_viewpoint_entry_carries_coordinates():
+    s = _snap()
+    for entry, vp in zip(s["viewpoints"], VIEWPOINTS, strict=True):
+        assert entry["lat"] == vp.lat
+        assert entry["lon"] == vp.lon

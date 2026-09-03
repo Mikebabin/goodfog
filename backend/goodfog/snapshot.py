@@ -33,6 +33,8 @@ def _viewpoint(vp: Viewpoint, fc: Forecast) -> dict:
     return {
         "id": vp.id,
         "name": vp.name,
+        "lat": vp.lat,
+        "lon": vp.lon,
         "elev_ft": vp.elev_ft,
         "desc": vp.desc,
         "green_ft": list(vp.green_ft),
