@@ -19,6 +19,7 @@ from .providers.ors import OrsProvider, RoutingError
 from .viewpoints import VIEWPOINTS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)  # its INFO line prints full request URLs (keys, addresses)
 log = logging.getLogger(__name__)
 
 DEST_POINTS = [(v.lat, v.lon) for v in VIEWPOINTS]

@@ -44,14 +44,13 @@ class OrsProvider:
 
     async def geocode(self, text: str) -> Place | None:
         params = {
-            "api_key": self.api_key,
             "text": text,
             "size": 1,
             "focus.point.lat": FOCUS_LAT,
             "focus.point.lon": FOCUS_LON,
             "boundary.country": "US",
         }
-        body = await self._request("GET", GEOCODE_URL, params=params)
+        body = await self._request("GET", GEOCODE_URL, params=params, headers={"Authorization": self.api_key})
         try:
             features = body["features"]
             if not features:

@@ -1,10 +1,13 @@
 import json
+import logging
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 import httpx
 import pytest
 import respx
 
+import goodfog.app  # noqa: F401  applies production logging config
 from goodfog.providers.ors import GEOCODE_URL, MATRIX_URL, Leg, OrsProvider, Place, RoutingError
 from goodfog.viewpoints import VIEWPOINTS
 
@@ -22,7 +25,9 @@ async def test_geocode_returns_first_place_with_focus_and_country():
         place = await OrsProvider(client, "test-key").geocode("san francisco")
     assert place == Place(label="San Francisco, CA, USA", lat=37.7749, lon=-122.4194)
     q = route.calls.last.request.url.params
-    assert q["api_key"] == "test-key" and q["text"] == "san francisco" and q["size"] == "1"
+    assert route.calls.last.request.headers["authorization"] == "test-key"
+    assert "api_key" not in q
+    assert q["text"] == "san francisco" and q["size"] == "1"
     assert q["focus.point.lat"] == "37.83" and q["focus.point.lon"] == "-122.48"
     assert q["boundary.country"] == "US"
 
@@ -83,3 +88,15 @@ async def test_matrix_network_error_raises_without_leaking_key():
         with pytest.raises(RoutingError) as ei:
             await OrsProvider(client, "secret-key").matrix(ORIGIN, DESTS)
     assert "secret-key" not in str(ei.value)
+
+
+@respx.mock
+async def test_geocode_does_not_log_key_or_query(caplog):
+    respx.get(GEOCODE_URL).mock(return_value=httpx.Response(200, json={"type": "FeatureCollection", "features": []}))
+    with caplog.at_level(logging.INFO):
+        async with httpx.AsyncClient() as client:
+            await OrsProvider(client, "secret-key").geocode("1234 Private St")
+    assert "secret-key" not in caplog.text
+    # httpx's INFO line would carry the query string percent/plus-encoded (e.g. "Private+St"),
+    # so decode before asserting or the check trivially passes without ever exercising the fix.
+    assert "Private St" not in unquote_plus(caplog.text)
