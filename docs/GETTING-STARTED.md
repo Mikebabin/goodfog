@@ -76,7 +76,9 @@ can watch the changed files in GitHub Desktop as it goes.
   which is ignored by git.
 - **Optional key:** `ORS_API_KEY` (free OpenRouteService account) turns on drive times.
   Without it the feature is simply hidden — nothing breaks.
-- **Tests must pass** before a PR is opened. Ask Claude to run them if unsure.
+- **Tests must pass** before a PR is opened. Ask Claude to run them if unsure. GitHub
+  runs both suites again on every PR (the "CI" checks at the bottom of the PR page); a
+  red check blocks merging.
 - Ask Claude to explain anything — "explain how the fog-base (LCL) status and the
   likelihood score are computed in backend/goodfog/fog.py" or "what does this PR
   change?" are good questions.

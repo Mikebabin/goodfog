@@ -16,6 +16,7 @@ New contributor? Read `docs/GETTING-STARTED.md`.
 
 ## Rules
 - Work on a branch; open a PR. Never push to `main` — merging `main` auto-deploys to https://goodfog.babins.net.
+- CI (`.github/workflows/ci.yml`) runs both suites on every PR, backend with `-W error`; it is PR-only on purpose (a post-merge run gates nothing and doubles Actions minutes). Keep it green before asking for review.
 - Write or update tests with every change (TDD: failing test first). Fog math in `fog.py` stays pure: no I/O, no clock; `now` is passed in.
 - The scoring rubric, thresholds, and copy were ported 1:1 from the original single-file app; `tests/test_score.py` holds a parity table computed from that JS. Changing behavior means changing the table deliberately, in the same PR.
 - The frontend never computes scores; it renders `/api/snapshot`. Only small pure helpers (bar geometry, time formatting, plan best-window) live in `src/lib/`.

@@ -1,0 +1,71 @@
+name: CI
+
+# Pull requests only, deliberately. Merging `main` is deploying (Coolify
+# auto-deploys every merge), so a `push: main` run would deliver its verdict
+# after the code is already live and gate nothing — while doubling the
+# Actions minutes billed per PR. That duplication exhausted the free minutes
+# on another private repo twice in August 2026. Branch protection requiring
+# these checks on `main` is what keeps a red suite from shipping.
+on:
+  pull_request:
+    branches: [main]
+
+# Least privilege for the third-party actions below, independent of the repo default.
+permissions:
+  contents: read
+
+# Supersede, don't queue: a second push to the same PR cancels the first run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      # Exact tag: setup-uv publishes no floating `v10` major tag.
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          # Match backend/Dockerfile so CI resolves the lockfile the same way prod does.
+          version: "0.10.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install
+        # --locked (not the Dockerfile's --frozen) fails if pyproject.toml drifted
+        # from uv.lock, catching a forgotten `uv lock` before it reaches the image.
+        run: uv sync --locked
+
+      - name: Test
+        # -W error: a deprecation warning today is a hard failure at the next
+        # dependency bump; surface it while it is still cheap to fix.
+        run: uv run pytest -q -W error
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Match frontend/Dockerfile (node:22-alpine).
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
