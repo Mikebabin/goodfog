@@ -10,6 +10,10 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege for the third-party actions below, independent of the repo default.
+permissions:
+  contents: read
+
 # Supersede, don't queue: a second push to the same PR cancels the first run.
 concurrency:
   group: ci-${{ github.ref }}
@@ -33,7 +37,9 @@ jobs:
           cache-dependency-glob: backend/uv.lock
 
       - name: Install
-        run: uv sync --frozen
+        # --locked (not the Dockerfile's --frozen) fails if pyproject.toml drifted
+        # from uv.lock, catching a forgotten `uv lock` before it reaches the image.
+        run: uv sync --locked
 
       - name: Test
         # -W error: a deprecation warning today is a hard failure at the next
