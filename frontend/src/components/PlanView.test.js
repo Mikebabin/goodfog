@@ -38,7 +38,8 @@ describe('PlanView grid', () => {
     const vp = vpWith({});
     const { container } = render(PlanView, { vp, windows });
     const buttons = [...container.querySelectorAll('button.cell')];
-    expect(buttons.map((b) => b.classList.contains('outlook'))).toEqual([false, false, false, true, true, true, true]);
+    // buttons read row by row: Sunrise row (d1_am, d2_am, d3_am) then Sunset row (tonight, d1_pm, d2_pm, d3_pm)
+    expect(buttons.map((b) => b.classList.contains('outlook'))).toEqual([false, true, true, false, false, true, true]);
     expect(container.querySelectorAll('.cell .tag')).toHaveLength(4);
   });
 

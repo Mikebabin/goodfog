@@ -22,27 +22,18 @@
   {/if}
   <div class="grid" style="grid-template-columns: auto repeat({groups.length}, 1fr)">
     <div class="corner"></div>
-    {#each groups as g, gi (g.day)}
-      <div class="day-head" style="grid-column:{gi + 2}">{header(g)}</div>
+    {#each groups as g (g.day)}
+      <div class="day-head">{header(g)}</div>
     {/each}
-    {#each halves as [rowLabel], ri (rowLabel)}
-      <div class="row-head" style="grid-row:{ri + 2}">{rowLabel}</div>
-    {/each}
-    {#each groups as g, gi (g.day)}
-      {#each halves as [, half], ri (half)}
+    {#each halves as [rowLabel, half] (half)}
+      <div class="row-head">{rowLabel}</div>
+      {#each groups as g (g.day)}
         {@const w = g[half]}
         {@const r = w ? vp.results[w.id] : null}
         {#if !w}
-          <div class="cell empty" style="grid-column:{gi + 2};grid-row:{ri + 2}" aria-hidden="true">—</div>
+          <div class="cell empty" aria-hidden="true">—</div>
         {:else}
-          <button
-            class="cell"
-            style="grid-column:{gi + 2};grid-row:{ri + 2}"
-            class:best={w.id === best.id}
-            class:outlook={w.outlook}
-            aria-label={label(w, r)}
-            onclick={() => onselect(w.id)}
-          >
+          <button class="cell" class:best={w.id === best.id} class:outlook={w.outlook} aria-label={label(w, r)} onclick={() => onselect(w.id)}>
             <div class="compare-score" style="color:{scoreColor(r?.score)}">{r ? `${r.score}%` : '—'}</div>
             <div class="compare-verdict">{r ? `${r.verdict.emoji} ${r.verdict.label}` : ''}</div>
             <div class="when">{fmtTime(w.sun_event)}</div>
