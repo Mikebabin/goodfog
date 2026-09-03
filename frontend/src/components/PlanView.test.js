@@ -31,7 +31,10 @@ describe('PlanView grid', () => {
     const best = cells(container).filter((c) => c.classList.contains('best'));
     expect(best).toHaveLength(1);
     expect(best[0].getAttribute('aria-label')).toBe('Tomorrow Sunset, 78%');
-    expect(best[0].querySelector('.compare-score').textContent).toBe('78%');
+    const score = best[0].querySelector('.compare-score');
+    expect(score.textContent).toBe('78%');
+    expect(score.classList.contains('go')).toBe(true); // themed via class, not an inline hex
+    expect(score.getAttribute('style')).toBeNull();
   });
 
   it('marks day 2 and 3 cells as outlook and leaves day 0 and 1 unmarked', () => {

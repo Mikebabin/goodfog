@@ -12,9 +12,9 @@
 
 <style>
   .elevation-banner { border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; }
-  .above { background: #0d2d0d; border: 1px solid #238636; }
-  .edge  { background: #2d2200; border: 1px solid #9e6a03; }
-  .below { background: #1a1a2e; border: 1px solid #4a4a8a; }
+  .above { background: var(--above-bg); border: 1px solid var(--above-border); }
+  .edge  { background: var(--edge-bg); border: 1px solid var(--edge-border); }
+  .below { background: var(--below-bg); border: 1px solid var(--below-border); }
   .clear { background: var(--panel); border: 1px solid var(--border); }
   .elev-icon { font-size: 1.6rem; flex-shrink: 0; }
   .elev-body { flex: 1; }

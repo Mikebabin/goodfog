@@ -1,5 +1,13 @@
 import { it, expect } from 'vitest';
-import { scoreColor } from './colors.js';
+import { scoreClass, scoreColor } from './colors.js';
+
+it('maps score bands to verdict classes for themed text', () => {
+  expect(scoreClass(70)).toBe('go');
+  expect(scoreClass(50)).toBe('try');
+  expect(scoreClass(30)).toBe('maybe');
+  expect(scoreClass(29)).toBe('no');
+  expect(scoreClass(null)).toBe('none');
+});
 
 it('maps score bands to colors', () => {
   expect(scoreColor(70)).toBe('#3fb950');

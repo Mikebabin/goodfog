@@ -48,7 +48,7 @@
 <style>
   .wrap { margin-bottom: 16px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
   svg { display: block; width: 100%; height: auto; }
-  .water { fill: #0b1a2b; }
+  .water { fill: var(--water); }
   .land { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
   .dot { cursor: pointer; outline: none; }
   .dot:focus-visible .disc { stroke: var(--blue); stroke-width: 3; }

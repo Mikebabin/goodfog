@@ -46,5 +46,5 @@
   .resolved { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; }
   .clear { padding: 4px 8px; font-size: 0.8rem; }
   .hint { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
-  .err { font-size: 0.78rem; color: #f85149; margin-top: 6px; }
+  .err { font-size: 0.78rem; color: var(--err); margin-top: 6px; }
 </style>

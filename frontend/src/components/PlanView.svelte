@@ -1,6 +1,6 @@
 <script>
   import { fmtTime } from '../lib/time.js';
-  import { scoreColor } from '../lib/colors.js';
+  import { scoreClass } from '../lib/colors.js';
   import { fmtDrive } from '../lib/drive.js';
   import { bestWindow, planSummary } from '../lib/plan.js';
   import { groupByDay } from '../lib/days.js';
@@ -34,7 +34,7 @@
           <div class="cell empty" aria-hidden="true">—</div>
         {:else}
           <button class="cell" class:best={w.id === best.id} class:outlook={w.outlook} aria-label={label(w, r)} onclick={() => onselect(w.id)}>
-            <div class="compare-score" style="color:{scoreColor(r?.score)}">{r ? `${r.score}%` : '—'}</div>
+            <div class="compare-score {scoreClass(r?.score)}">{r ? `${r.score}%` : '—'}</div>
             <div class="compare-verdict">{r ? `${r.verdict.emoji} ${r.verdict.label}` : ''}</div>
             <div class="when">{fmtTime(w.sun_event)}</div>
             {#if w.outlook}<div class="tag">outlook</div>{/if}
@@ -56,10 +56,15 @@
   .day-head { text-align: center; }
   .row-head { padding-right: 4px; }
   .cell { background: var(--bg); border-radius: 8px; padding: 8px 4px; border: 1px solid transparent; text-align: center; color: inherit; font-family: inherit; cursor: pointer; position: relative; min-height: 64px; }
-  .cell.best { border-color: #238636; }
+  .cell.best { border-color: var(--green); }
   .cell.outlook { opacity: 0.8; padding-top: 14px; }
   .cell.empty { color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: default; }
   .compare-score { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; }
+  .compare-score.go { color: var(--score-go); }
+  .compare-score.try { color: var(--score-try); }
+  .compare-score.maybe { color: var(--score-maybe); }
+  .compare-score.no { color: var(--score-no); }
+  .compare-score.none { color: var(--score-none); }
   .compare-verdict { font-size: 0.66rem; line-height: 1.2; }
   .when { font-size: 0.66rem; color: var(--muted); margin-top: 3px; }
   .tag { position: absolute; top: 3px; right: 4px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }

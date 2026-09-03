@@ -25,7 +25,7 @@
 
 <style>
   .gate { border-top: 1px solid var(--panel2); }
-  .warn { color: #e3812c; }
+  .warn { color: var(--warn); }
   .small { font-size: 0.8rem; text-align: right; }
   .muted { color: var(--muted); font-weight: 500; }
 </style>
