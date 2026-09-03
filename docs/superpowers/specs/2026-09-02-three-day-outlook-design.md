@@ -95,7 +95,7 @@ parameter construction so the fixture cannot drift from the real request.
 - `HalfToggle` is a two-segment control (Sunrise | Sunset) rendered between the strip and
   the verdict banner whenever the selected day has both halves; hidden on Tonight and Plan.
 - Map behaviour is unchanged: dots colour by the selected window, or by the best of all
-  seven on Plan (`scoreForTab` already does this via `bestWindow`).
+  seven on Plan (`scoreForTab` already does this by taking the maximum non-null score).
 
 ### 3.2 Detail view (`WindowView.svelte`)
 
