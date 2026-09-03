@@ -29,7 +29,10 @@ describe('barModel', () => {
     expect(m.maxFt).toBe(400); // max(100, 300, 0) * 1.2 = 360 -> 400
     expect(m.lclPct).toBeNull();
   });
-  it('clamps percentages to 0..100', () => {
-    expect(barModel(hawk, 100000).lclPct).toBe(100);
+  it('expands the axis to fit a fog base far above the viewpoint', () => {
+    const m = barModel(hawk, 100000);
+    expect(m.maxFt).toBe(120000); // niceMax(100000 * 1.2)
+    expect(m.lclPct).toBeCloseTo((100000 / 120000) * 100, 5);
+    expect(m.locPct).toBeCloseTo((923 / 120000) * 100, 5);
   });
 });
