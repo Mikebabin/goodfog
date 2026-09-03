@@ -6,6 +6,7 @@
   import Header from './components/Header.svelte';
   import LocationPicker from './components/LocationPicker.svelte';
   import Tabs from './components/Tabs.svelte';
+  import HalfToggle from './components/HalfToggle.svelte';
   import WindowView from './components/WindowView.svelte';
   import PlanView from './components/PlanView.svelte';
   import VerifyLinks from './components/VerifyLinks.svelte';
@@ -14,6 +15,7 @@
   import { getPosition } from './lib/geolocate.js';
   import { loadOrigin, saveOrigin } from './lib/origin.js';
   import { makeLatest } from './lib/latest.js';
+  import { dayTabId, groupByDay, groupForTabId, tabsFor, windowForDay } from './lib/days.js';
 
   const coast = JSON.parse(coastRaw); // Vite only auto-parses .json, so load .geojson as text
 
@@ -29,7 +31,7 @@
   let status = $state('loading'); // loading | ok | warming_up | error
   let error = $state(null);
   let selectedId = $state(loadSelected());
-  let tab = $state('tonight'); // tonight | tomorrow_am | tomorrow_pm | plan
+  let tab = $state('tonight'); // a window id (tonight, d1_am, …) | plan
 
   let origin = $state(loadOrigin(globalThis.localStorage));
   let drives = $state(null);        // {[vpId]: {seconds, meters} | null} once fetched
@@ -89,8 +91,17 @@
       viewpoints[0] ??
       null
   );
-  const tabs = $derived([...(snapshot?.windows ?? []).map((w) => ({ id: w.id, label: w.tab })), { id: 'plan', label: '🔭 Plan' }]);
+  const groups = $derived(groupByDay(snapshot?.windows ?? []));
+  const tabs = $derived(tabsFor(groups));
   const window_ = $derived(vp?.windows.find((w) => w.id === tab) ?? null);
+  const group = $derived(window_ ? groups.find((g) => g.day === window_.day) ?? null : null);
+  const activeTab = $derived(tab === 'plan' ? 'plan' : group ? dayTabId(group.day) : null);
+
+  function selectTab(id) {
+    if (id === 'plan') { tab = 'plan'; return; }
+    const g = groupForTabId(groups, id);
+    if (g) tab = windowForDay(g, window_).id;
+  }
 
   function select(id) {
     selectedId = id;
@@ -139,10 +150,11 @@
       <OriginPicker {origin} busy={driveBusy} error={driveError} onsubmit={submitAddress} onlocate={useMyLocation} onclear={() => setOrigin(null)} />
     {/if}
     <LocationPicker {viewpoints} {selectedId} onselect={select} drives={driveEnabled ? drives : null} />
-    <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
+    <Tabs {tabs} active={activeTab} onselect={selectTab} />
+    <HalfToggle {group} active={tab} onselect={(id) => (tab = id)} />
 
     {#if tab === 'plan'}
-      <PlanView {vp} windows={vp.windows} drive={selectedDrive} />
+      <PlanView {vp} windows={vp.windows} drive={selectedDrive} onselect={(id) => (tab = id)} />
     {:else if window_}
       <WindowView {vp} win={window_} result={vp.results[window_.id]} drive={selectedDrive} />
     {/if}

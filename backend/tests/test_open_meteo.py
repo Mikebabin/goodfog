@@ -16,8 +16,8 @@ def test_parse_maps_by_index_and_exposes_daily():
     fcs = parse_open_meteo(FIXTURE, expected_points=8)
     assert len(fcs) == 8
     f = fcs[0]
-    assert len(f.hourly_time) == 72
-    assert len(f.sunrise) == 3 and len(f.sunset) == 3
+    assert len(f.hourly_time) == 96
+    assert len(f.sunrise) == 4 and len(f.sunset) == 4
     assert f.sunset[0].startswith(f.hourly_time[0][:10])  # same local day
 
 
@@ -46,6 +46,20 @@ def test_parse_rejects_wrong_count_and_malformed():
         parse_open_meteo([{"hourly": {}}], expected_points=1)
 
 
+def test_parse_rejects_short_daily_block():
+    payload = json.loads(json.dumps(FIXTURE[:1]))
+    payload[0]["daily"]["sunset"] = payload[0]["daily"]["sunset"][:3]
+    with pytest.raises(ProviderError):
+        parse_open_meteo(payload, expected_points=1)
+
+
+def test_parse_rejects_null_daily_entry():
+    payload = json.loads(json.dumps(FIXTURE[:1]))
+    payload[0]["daily"]["sunrise"][3] = None
+    with pytest.raises(ProviderError):
+        parse_open_meteo(payload, expected_points=1)
+
+
 @respx.mock
 async def test_fetch_builds_multi_point_query():
     route = respx.get(URL).mock(return_value=httpx.Response(200, json=FIXTURE))
@@ -56,9 +70,17 @@ async def test_fetch_builds_multi_point_query():
     q = route.calls.last.request.url.params
     assert q["latitude"] == ",".join(str(v.lat) for v in VIEWPOINTS)
     assert q["timezone"] == "America/Los_Angeles"
-    assert q["forecast_days"] == "3"
+    assert q["forecast_days"] == "4"
     assert q["models"] == "best_match"
     assert "dewpoint_2m" in q["hourly"]
+
+
+def test_request_params_is_the_single_source_of_the_query():
+    from goodfog.providers.open_meteo import request_params
+    q = request_params([(1.5, -2.5), (3.0, 4.0)], models="best_match")
+    assert q["latitude"] == "1.5,3.0" and q["longitude"] == "-2.5,4.0"
+    assert q["forecast_days"] == "4" and q["timezone"] == "America/Los_Angeles"
+    assert q["daily"] == "sunrise,sunset" and "cloudcover_low" in q["hourly"]
 
 
 @respx.mock

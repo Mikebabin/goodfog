@@ -8,6 +8,8 @@ from goodfog.viewpoints import VIEWPOINTS
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "open_meteo.json").read_text())
 NOW = datetime(2026, 9, 2, 23, 15, tzinfo=timezone.utc)
+WINDOW_IDS = ["tonight", "d1_am", "d1_pm", "d2_am", "d2_pm", "d3_am", "d3_pm"]
+WINDOW_KEYS = {"id", "day", "day_label", "outlook", "title", "tab", "sun_label", "sun_event", "arrive_by", "hour"}
 
 
 def _snap():
@@ -18,8 +20,8 @@ def test_top_level_shape():
     s = _snap()
     assert s["app_version"] == "0.1.0" and s["commit"] == "abc1234"
     assert s["generated_at"] == "2026-09-02T23:15:00+00:00"
-    assert [w["id"] for w in s["windows"]] == ["tonight", "tomorrow_am", "tomorrow_pm"]
-    assert set(s["windows"][0]) == {"id", "title", "tab", "sun_label", "sun_event", "arrive_by", "hour"}
+    assert [w["id"] for w in s["windows"]] == WINDOW_IDS
+    assert set(s["windows"][0]) == WINDOW_KEYS
     assert [v["id"] for v in s["viewpoints"]] == [v.id for v in VIEWPOINTS]
 
 
@@ -30,7 +32,7 @@ def test_viewpoint_entry_shape():
     for key in ("desc", "composition", "access", "cam_tip"):
         assert isinstance(v[key], str) and v[key]
     assert "windows" in v
-    assert set(v["windows"][0]) == {"id", "title", "tab", "sun_label", "sun_event", "arrive_by", "hour"}
+    assert set(v["windows"][0]) == WINDOW_KEYS
     r = v["results"]["tonight"]
     assert set(r) == {"score", "verdict", "status", "factors", "explanation", "elevation", "lcl_ft", "wx"}
     assert set(r["verdict"]) == {"label", "emoji", "cls"}
@@ -46,10 +48,11 @@ def test_each_viewpoint_gets_windows_from_its_own_daily_block():
     s = _snap()
     for vp_entry, fc in zip(s["viewpoints"], fcs, strict=True):
         ws = vp_entry["windows"]
-        assert [w["id"] for w in ws] == ["tonight", "tomorrow_am", "tomorrow_pm"]
+        assert [w["id"] for w in ws] == WINDOW_IDS
         assert ws[0]["sun_event"] == fc.sunset[0]
         assert ws[1]["sun_event"] == fc.sunrise[1]
         assert ws[2]["sun_event"] == fc.sunset[1]
+        assert ws[6]["sun_event"] == fc.sunset[3]
         assert set(vp_entry["results"]) == {w["id"] for w in ws}
 
 
@@ -57,7 +60,7 @@ def test_missing_hour_gives_null_result():
     fcs = parse_open_meteo(FIXTURE, 8)
     broken = fcs[0].__class__(hourly_time=(), hourly=fcs[0].hourly, sunrise=fcs[0].sunrise, sunset=fcs[0].sunset)
     s = build_snapshot(VIEWPOINTS, [broken] + fcs[1:], now=NOW, app_version="x", commit="y")
-    assert s["viewpoints"][0]["results"] == {"tonight": None, "tomorrow_am": None, "tomorrow_pm": None}
+    assert s["viewpoints"][0]["results"] == {wid: None for wid in WINDOW_IDS}
     assert s["viewpoints"][1]["results"]["tonight"] is not None
 
 
@@ -77,3 +80,11 @@ def test_features_echoed_and_default_empty():
     assert _snap()["features"] == {}
     s = build_snapshot(VIEWPOINTS, fcs, now=NOW, app_version="x", commit="y", features={"drive": True})
     assert s["features"] == {"drive": True}
+
+
+def test_day_three_sunset_has_a_forecast_row():
+    # forecast_days=4 exists so that d3_pm lands on a real hourly row; guard the fixture and the provider together.
+    s = _snap()
+    for v in s["viewpoints"]:
+        assert v["results"]["d3_pm"] is not None
+        assert v["windows"][6]["outlook"] is True and v["windows"][1]["outlook"] is False

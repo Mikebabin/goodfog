@@ -9,10 +9,10 @@ export function bestWindow(windows, results) {
 
 export function planSummary(best, result, vp) {
   if (!result || result.score < 40) {
-    return `No great windows in the next two days for ${vp.name}. Check a higher viewpoint or wait for the next marine layer event.`;
+    return `No great windows in the next three days for ${vp.name}. Check a higher viewpoint or wait for the next marine layer event.`;
   }
   const fog = result.lcl_ft != null
     ? ` Fog base ~${result.lcl_ft.toLocaleString('en-US')} ft vs ${vp.name} at ${vp.elev_ft.toLocaleString('en-US')} ft.`
     : '';
-  return `Best bet: ${best.tab} at ${fmtTime(best.sun_event)} — ${result.score}% likelihood.${fog}`;
+  return `Best bet: ${best.title} at ${fmtTime(best.sun_event)} — ${result.score}% likelihood.${fog}`;
 }

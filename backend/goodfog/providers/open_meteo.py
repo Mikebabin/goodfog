@@ -12,7 +12,7 @@ HOURLY_VARS = (
     "cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,"
     "precipitation_probability,temperature_2m,dewpoint_2m"
 )
-FORECAST_DAYS = 3
+FORECAST_DAYS = 4  # day-3 sunset needs an hourly row on the fourth calendar day
 
 
 @dataclass(frozen=True)
@@ -39,6 +39,10 @@ def _parse_one(obj: dict) -> Forecast:
     try:
         hourly = obj["hourly"]
         daily = obj["daily"]
+        for k in ("sunrise", "sunset"):
+            entries = daily[k]
+            if len(entries) < FORECAST_DAYS or any(e is None for e in entries[:FORECAST_DAYS]):
+                raise ProviderError(f"daily {k} has fewer than {FORECAST_DAYS} usable entries")
         return Forecast(
             hourly_time=tuple(hourly["time"]),
             hourly={k: tuple(hourly[k]) for k in HOURLY_VARS.split(",")},
@@ -56,6 +60,19 @@ def parse_open_meteo(payload, expected_points: int) -> list[Forecast]:
     return [_parse_one(o) for o in objs]
 
 
+def request_params(points: list[tuple[float, float]], models: str) -> dict[str, str]:
+    """The exact query the provider sends; scripts/fetch_fixture.py reuses it so the fixture cannot drift."""
+    return {
+        "latitude": ",".join(str(lat) for lat, _ in points),
+        "longitude": ",".join(str(lon) for _, lon in points),
+        "hourly": HOURLY_VARS,
+        "daily": "sunrise,sunset",
+        "timezone": "America/Los_Angeles",
+        "forecast_days": str(FORECAST_DAYS),
+        "models": models,
+    }
+
+
 class OpenMeteoProvider:
     name = "open_meteo"
 
@@ -65,15 +82,7 @@ class OpenMeteoProvider:
         self.models = models
 
     async def fetch(self) -> list[Forecast]:
-        params = {
-            "latitude": ",".join(str(lat) for lat, _ in self.points),
-            "longitude": ",".join(str(lon) for _, lon in self.points),
-            "hourly": HOURLY_VARS,
-            "daily": "sunrise,sunset",
-            "timezone": "America/Los_Angeles",
-            "forecast_days": str(FORECAST_DAYS),
-            "models": self.models,
-        }
+        params = request_params(self.points, self.models)
         try:
             r = await self.client.get(URL, params=params, timeout=15.0)
             r.raise_for_status()
