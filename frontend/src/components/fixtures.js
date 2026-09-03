@@ -12,11 +12,26 @@ export const eastPeak = {
   yellow_ft: [2400, 2571],
 };
 
+const win = (id, day, day_label, long, sun_label, sun_event, arrive_by) => ({
+  id, day, day_label, outlook: day >= 2, title: `${long} ${sun_label}`, tab: day_label,
+  sun_label, sun_event, arrive_by, hour: `${sun_event.slice(0, 13)}:00`,
+});
+
+/** Seven windows as the backend emits them for a Wednesday (2026-09-02). */
 export const windows = [
-  { id: 'tonight', title: 'Tonight Sunset', tab: 'Tonight', sun_label: 'Sunset', sun_event: '2026-09-02T19:32', arrive_by: '2026-09-02T18:47', hour: '2026-09-02T19:00' },
-  { id: 'tomorrow_am', title: 'Tomorrow Sunrise', tab: 'Tomorrow AM', sun_label: 'Sunrise', sun_event: '2026-09-03T06:48', arrive_by: '2026-09-03T06:03', hour: '2026-09-03T07:00' },
-  { id: 'tomorrow_pm', title: 'Tomorrow Sunset', tab: 'Tomorrow PM', sun_label: 'Sunset', sun_event: '2026-09-03T19:30', arrive_by: '2026-09-03T18:45', hour: '2026-09-03T19:00' },
+  win('tonight', 0, 'Tonight', 'Tonight', 'Sunset', '2026-09-02T19:32', '2026-09-02T18:47'),
+  win('d1_am', 1, 'Tomorrow', 'Tomorrow', 'Sunrise', '2026-09-03T06:48', '2026-09-03T06:18'),
+  win('d1_pm', 1, 'Tomorrow', 'Tomorrow', 'Sunset', '2026-09-03T19:30', '2026-09-03T18:45'),
+  win('d2_am', 2, 'Fri', 'Friday', 'Sunrise', '2026-09-04T06:49', '2026-09-04T06:19'),
+  win('d2_pm', 2, 'Fri', 'Friday', 'Sunset', '2026-09-04T19:29', '2026-09-04T18:44'),
+  win('d3_am', 3, 'Sat', 'Saturday', 'Sunrise', '2026-09-05T06:50', '2026-09-05T06:20'),
+  win('d3_pm', 3, 'Sat', 'Saturday', 'Sunset', '2026-09-05T19:27', '2026-09-05T18:42'),
 ];
+
+/** Results keyed by window id; unspecified windows are null. */
+export function resultsFor(spec) {
+  return Object.fromEntries(windows.map((w) => [w.id, spec[w.id] ?? null]));
+}
 
 export const verdicts = {
   go: { label: 'Go for it!', emoji: '🚀', cls: 'go' },
