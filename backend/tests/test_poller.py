@@ -45,6 +45,25 @@ async def test_failure_keeps_previous_snapshot_and_records_error():
     assert "boom" in p.last_error
 
 
+async def test_short_daily_block_surfaces_as_provider_error_and_keeps_snapshot():
+    class ShortDailyProvider:
+        async def fetch(self):
+            payload = json.loads(json.dumps(FIXTURE))
+            payload[0]["daily"]["sunset"] = payload[0]["daily"]["sunset"][:3]
+            return parse_open_meteo(payload, 8)
+
+    p = Poller(FakeProvider(), poll_minutes=15, app_version="0.1.0", commit="dev")
+    await p.poll_once(now=T0)
+    prev_snapshot = p.snapshot
+
+    p.provider = ShortDailyProvider()
+    await p.poll_once(now=T0 + timedelta(minutes=15))
+
+    assert p.snapshot is prev_snapshot
+    assert p.generated_at == T0
+    assert p.last_error is not None and p.last_error.startswith("ProviderError")
+
+
 async def test_poll_once_records_non_provider_exception():
     class BadProvider:
         async def fetch(self):

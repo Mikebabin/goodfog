@@ -46,6 +46,20 @@ def test_parse_rejects_wrong_count_and_malformed():
         parse_open_meteo([{"hourly": {}}], expected_points=1)
 
 
+def test_parse_rejects_short_daily_block():
+    payload = json.loads(json.dumps(FIXTURE[:1]))
+    payload[0]["daily"]["sunset"] = payload[0]["daily"]["sunset"][:3]
+    with pytest.raises(ProviderError):
+        parse_open_meteo(payload, expected_points=1)
+
+
+def test_parse_rejects_null_daily_entry():
+    payload = json.loads(json.dumps(FIXTURE[:1]))
+    payload[0]["daily"]["sunrise"][3] = None
+    with pytest.raises(ProviderError):
+        parse_open_meteo(payload, expected_points=1)
+
+
 @respx.mock
 async def test_fetch_builds_multi_point_query():
     route = respx.get(URL).mock(return_value=httpx.Response(200, json=FIXTURE))

@@ -129,9 +129,9 @@ to `0.4.0`.
 
 ## 4. Error handling
 
-- Fewer than four sunrise/sunset entries from the provider: `build_windows` raises
-  `IndexError` → the poller logs and keeps the old snapshot, as any provider failure does
-  today. A test pins this.
+- Fewer than four usable sunrise/sunset entries from the provider: `parse_open_meteo` raises
+  `ProviderError` → the poller records `last_error` and keeps the old snapshot, as any
+  provider failure does. A test pins this at the parser and at the poller.
 - Missing hourly row for any window: `null` result, "No data for this window." in the detail
   view, dash in the Plan grid, treated as −1 by `bestWindow`.
 - Stale `tab` (e.g. a cached snapshot still naming `tomorrow_am`): `window_` resolves to

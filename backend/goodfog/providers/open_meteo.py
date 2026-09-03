@@ -39,6 +39,10 @@ def _parse_one(obj: dict) -> Forecast:
     try:
         hourly = obj["hourly"]
         daily = obj["daily"]
+        for k in ("sunrise", "sunset"):
+            entries = daily[k]
+            if len(entries) < FORECAST_DAYS or any(e is None for e in entries[:FORECAST_DAYS]):
+                raise ProviderError(f"daily {k} has fewer than {FORECAST_DAYS} usable entries")
         return Forecast(
             hourly_time=tuple(hourly["time"]),
             hourly={k: tuple(hourly[k]) for k in HOURLY_VARS.split(",")},
