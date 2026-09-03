@@ -24,7 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10
+      # Exact tag: setup-uv publishes no floating `v10` major tag.
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           # Match backend/Dockerfile so CI resolves the lockfile the same way prod does.
           version: "0.10.12"
