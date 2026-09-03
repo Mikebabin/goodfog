@@ -34,6 +34,7 @@ class Settings:
     open_meteo_models: str
     app_version: str
     commit: str
+    ors_api_key: str | None = None  # OpenRouteService; drive times are disabled when unset
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "Settings":
@@ -48,4 +49,5 @@ class Settings:
             open_meteo_models=env.get("OPEN_METEO_MODELS", "best_match"),
             app_version=(env.get("APP_VERSION") or "").strip() or _pyproject_version(),
             commit=commit,
+            ors_api_key=(env.get("ORS_API_KEY") or "").strip() or None,
         )

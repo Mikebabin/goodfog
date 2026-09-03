@@ -4,7 +4,7 @@ Marin marine-layer inversion checker for photographers. Design spec: `docs/super
 New contributor? Read `docs/GETTING-STARTED.md`.
 
 ## Layout
-- `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `snapshot.py`, `poller.py`, `app.py`, `config.py` (settings).
+- `backend/` — Python 3.12 + FastAPI. `viewpoints.py` (data), `fog.py` (pure math), `windows.py`, `providers/open_meteo.py`, `drive.py` (pure drive helpers + cache), `providers/ors.py`, `snapshot.py`, `poller.py`, `app.py`, `config.py` (settings).
 - `frontend/` — Svelte 5 + Vite PWA. Pure helpers in `src/lib/` (tested), components in `src/components/`.
 - `data/` — generated coastline GeoJSON for the map; regenerate with `uv run --project backend python scripts/build_geo.py`, never hand-edit (a test guards winding and the frame).
 
@@ -20,6 +20,6 @@ New contributor? Read `docs/GETTING-STARTED.md`.
 - The scoring rubric, thresholds, and copy were ported 1:1 from the original single-file app; `tests/test_score.py` holds a parity table computed from that JS. Changing behavior means changing the table deliberately, in the same PR.
 - The frontend never computes scores; it renders `/api/snapshot`. Only small pure helpers (bar geometry, time formatting, plan best-window) live in `src/lib/`.
 - npm: pin exact versions, no `^`/`~`, commit `package-lock.json`, `npm ci --ignore-scripts`. Python: `uv`, exact pins in `pyproject.toml`.
-- No secrets; only `POLL_MINUTES` and `OPEN_METEO_MODELS` env vars. Never commit `.env`.
+- Secrets only via env vars: `ORS_API_KEY` (optional; drive times hidden without it, never logged or sent to the browser). Non-secret config: `POLL_MINUTES`, `OPEN_METEO_MODELS`. Never commit `.env`.
 - Feet, °F, mph everywhere; feet are shown with thousands separators.
 - Version lives in both `frontend/package.json` (+ lockfile) and `backend/pyproject.toml`; bump both together in PRs that change what users see (a test enforces they match). The footer and `/api/health` show it alongside the deployed commit sha, which requires the Coolify app setting "Source commit availability" = build time; otherwise prod shows `dev`. The sha reaches both images as the `SOURCE_COMMIT` build arg; the backend bakes it as `BUILD_COMMIT` because Coolify injects an empty runtime `SOURCE_COMMIT` into the container.

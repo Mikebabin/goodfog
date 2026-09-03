@@ -59,3 +59,9 @@ def test_frontend_and_backend_versions_match():
 
     pkg = json.loads((ROOT / "frontend" / "package.json").read_text())
     assert pkg["version"] == _pyproject_version()
+
+
+def test_ors_api_key_optional_and_stripped():
+    assert Settings.from_env({}).ors_api_key is None
+    assert Settings.from_env({"ORS_API_KEY": "   "}).ors_api_key is None
+    assert Settings.from_env({"ORS_API_KEY": " abc123 "}).ors_api_key == "abc123"

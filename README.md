@@ -56,6 +56,16 @@ docker compose up --build   # http://localhost:8080
 
 Tests: `cd backend && uv run pytest` · `cd frontend && npm test`.
 
+### Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `POLL_MINUTES` | `15` | Forecast refresh interval |
+| `OPEN_METEO_MODELS` | `best_match` | Open-Meteo model selection |
+| `ORS_API_KEY` | _(unset)_ | Optional [OpenRouteService](https://openrouteservice.org) key. Enables "drive time from your location"; the feature is hidden without it. Free plan is plenty. |
+
+Put secrets in a local `.env` (git-ignored); in production set them in the Coolify app.
+
 ## Verify before you go
 
 The app links out to Windy (cloud/fog/wind layers), [fog.today](https://fog.today)

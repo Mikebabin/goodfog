@@ -10,6 +10,9 @@ services:
     environment:
       POLL_MINUTES: ${POLL_MINUTES:-15}
       OPEN_METEO_MODELS: ${OPEN_METEO_MODELS:-best_match}
+      # Optional. OpenRouteService key (https://openrouteservice.org, free plan). Enables the
+      # drive-time feature; the UI hides it entirely when this is empty.
+      ORS_API_KEY: ${ORS_API_KEY:-}
     restart: unless-stopped
 
   web:
