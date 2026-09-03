@@ -24,6 +24,11 @@ describe('groupByDay', () => {
   it('returns an empty list for no windows', () => {
     expect(groupByDay([])).toEqual([]);
   });
+  it('falls back to tab text for a cached pre-0.4.0 window with no day_label', () => {
+    const g = groupByDay([{ id: 'tonight', tab: '🌅 Tonight', sun_label: 'Sunset' }]);
+    expect(g).toEqual([{ day: undefined, label: '🌅 Tonight', am: null, pm: g[0].pm }]);
+    expect(g[0].pm.id).toBe('tonight');
+  });
 });
 
 describe('windowForDay', () => {

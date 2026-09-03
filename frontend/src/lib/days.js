@@ -4,7 +4,7 @@ export function groupByDay(windows) {
   for (const w of windows) {
     let g = groups.find((x) => x.day === w.day);
     if (!g) {
-      g = { day: w.day, label: w.day_label, am: null, pm: null };
+      g = { day: w.day, label: w.day_label ?? w.tab ?? '', am: null, pm: null };
       groups.push(g);
     }
     if (w.sun_label === 'Sunrise') g.am = w;
