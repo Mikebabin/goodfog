@@ -3,11 +3,15 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 
 from goodfog.app import build_poller, create_app
 from goodfog.config import Settings
+from goodfog.drive import DriveCache
 from goodfog.poller import Poller
 from goodfog.providers.open_meteo import parse_open_meteo
+from goodfog.providers.ors import Leg, OrsProvider, Place, RoutingError
+from goodfog.viewpoints import VIEWPOINTS
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "open_meteo.json").read_text())
 
@@ -89,3 +93,109 @@ async def test_build_poller_sets_drive_feature_from_key():
         )
     assert without.features == {"drive": False}
     assert with_key.features == {"drive": True}
+
+
+class FakeOrs:
+    def __init__(self, legs=None, place="default", fail=False):
+        self.legs = legs
+        self.place = place
+        self.fail = fail
+        self.matrix_calls = 0
+        self.geocode_calls = []
+
+    async def geocode(self, text):
+        self.geocode_calls.append(text)
+        if self.fail:
+            raise RoutingError("HTTP 500")
+        if self.place == "default":
+            return Place(label="Somewhere, CA, USA", lat=37.7, lon=-122.4)
+        return self.place
+
+    async def matrix(self, origin, dests):
+        self.matrix_calls += 1
+        if self.fail:
+            raise RoutingError("HTTP 500")
+        if self.legs is not None:
+            return self.legs
+        return [Leg(seconds=600 + 60 * i, meters=10000 + 1000 * i) for i in range(len(dests))]
+
+
+def _drive_client(ors, cache=None):
+    poller = Poller(FakeProvider(), 15, "0.1.0", "abc1234")
+    app = create_app(_settings(), poller=poller, ors=ors, drive_cache=cache)
+    app.state.poller = poller
+    return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t")
+
+
+async def test_drive_and_geocode_503_without_provider():
+    async with _drive_client(None) as c:
+        d = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+        g = await c.get("/api/geocode", params={"q": "sf"})
+    assert d.status_code == 503 and d.json() == {"detail": "routing_unavailable"}
+    assert g.status_code == 503 and g.json() == {"detail": "routing_unavailable"}
+
+
+async def test_drive_returns_legs_and_caches_by_rounded_origin():
+    ors = FakeOrs()
+    async with _drive_client(ors, DriveCache()) as c:
+        r1 = await c.post("/api/drive", json={"lat": 37.77491, "lon": -122.41942})
+        r2 = await c.post("/api/drive", json={"lat": 37.77499, "lon": -122.41939})
+    assert r1.status_code == 200
+    body = r1.json()
+    assert body["origin"] == {"lat": 37.775, "lon": -122.419}
+    assert set(body["drives"]) == {v.id for v in VIEWPOINTS}
+    assert body["drives"][VIEWPOINTS[0].id] == {"seconds": 600, "meters": 10000}
+    assert r2.json() == body
+    assert ors.matrix_calls == 1
+
+
+async def test_drive_null_leg_and_upstream_failure():
+    legs = [None] + [Leg(seconds=1, meters=1)] * 7
+    async with _drive_client(FakeOrs(legs=legs)) as c:
+        r = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+    assert r.status_code == 200 and r.json()["drives"][VIEWPOINTS[0].id] is None
+    async with _drive_client(FakeOrs(fail=True)) as c:
+        r = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+    assert r.status_code == 503 and r.json() == {"detail": "routing_unavailable"}
+
+
+@pytest.mark.parametrize("body", [{"lat": 91, "lon": 0}, {"lat": 0, "lon": -181}, {"lat": "x", "lon": 0}, {"lon": 0}])
+async def test_drive_rejects_bad_coordinates(body):
+    ors = FakeOrs()
+    async with _drive_client(ors) as c:
+        r = await c.post("/api/drive", json=body)
+    assert r.status_code == 422
+    assert ors.matrix_calls == 0
+
+
+async def test_geocode_ok_no_match_blank_long_and_failure():
+    ors = FakeOrs()
+    async with _drive_client(ors) as c:
+        ok = await c.get("/api/geocode", params={"q": "  24th st  "})
+        blank = await c.get("/api/geocode", params={"q": "   "})
+        long = await c.get("/api/geocode", params={"q": "x" * 201})
+    assert ok.status_code == 200 and ok.json() == {"label": "Somewhere, CA, USA", "lat": 37.7, "lon": -122.4}
+    assert ors.geocode_calls == ["24th st"]
+    assert blank.status_code == 422 and long.status_code == 422
+    async with _drive_client(FakeOrs(place=None)) as c:
+        r = await c.get("/api/geocode", params={"q": "zzz"})
+    assert r.status_code == 404 and r.json() == {"detail": "no_match"}
+    async with _drive_client(FakeOrs(fail=True)) as c:
+        r = await c.get("/api/geocode", params={"q": "zzz"})
+    assert r.status_code == 503
+
+
+async def test_lifespan_builds_ors_only_when_key_set():
+    fake = FakePoller()
+    keyed = Settings(poll_minutes=15, open_meteo_models="best_match", app_version="0.1.0", commit="abc1234", ors_api_key="k")
+
+    async def run(settings, expect_provider):
+        app = create_app(settings, poller=fake)
+        async with app.router.lifespan_context(app):
+            if expect_provider:
+                assert isinstance(app.state.ors, OrsProvider) and app.state.ors.api_key == "k"
+            else:
+                assert app.state.ors is None
+
+    await asyncio.wait_for(run(keyed, True), timeout=5)
+    await asyncio.wait_for(run(_settings(), False), timeout=5)
