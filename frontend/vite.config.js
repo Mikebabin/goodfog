@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { svelteTesting } from '@testing-library/svelte/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
@@ -13,6 +14,9 @@ export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     svelte(),
+    // Under vitest only: resolves Svelte's browser build and unmounts components after each test.
+    // Component tests opt into jsdom per file (`// @vitest-environment jsdom`); lib tests stay in node.
+    svelteTesting(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
