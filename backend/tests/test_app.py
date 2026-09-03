@@ -210,3 +210,12 @@ async def test_drive_503_when_daily_budget_exhausted_and_cache_still_serves():
     assert ok.status_code == 200 and cached.status_code == 200
     assert blocked.status_code == 503 and blocked.json() == {"detail": "routing_unavailable"}
     assert ors.matrix_calls == 1
+
+
+async def test_drive_backs_off_after_upstream_failure():
+    ors = FakeOrs(fail=True)
+    async with _drive_client(ors) as c:
+        r1 = await c.post("/api/drive", json={"lat": 37.7, "lon": -122.4})
+        r2 = await c.post("/api/drive", json={"lat": 37.71, "lon": -122.41})
+    assert r1.status_code == 503 and r2.status_code == 503
+    assert ors.matrix_calls == 1  # second request short-circuited by the 30 s backoff

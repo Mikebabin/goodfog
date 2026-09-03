@@ -23,6 +23,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)  # its INFO line prints ful
 log = logging.getLogger(__name__)
 
 DEST_POINTS = [(v.lat, v.lon) for v in VIEWPOINTS]
+ROUTING_BACKOFF_S = 30.0  # after an upstream failure, refuse further ORS calls for this long
 
 
 class DriveRequest(BaseModel):
@@ -71,6 +72,7 @@ def create_app(
     app.state.ors = ors  # tests inject a fake; production builds one in lifespan when a key is set
     app.state.drive_cache = drive_cache or DriveCache()
     app.state.drive_budget = drive_budget or DailyBudget(MATRIX_DAILY_LIMIT)
+    app.state.routing_error_until = 0.0
 
     @app.get("/api/snapshot")
     async def snapshot():
@@ -91,10 +93,14 @@ def create_app(
         provider = app.state.ors
         if provider is None:
             return _unavailable()
+        now = time.monotonic()
+        if now < app.state.routing_error_until:
+            return _unavailable()
         try:
             place = await provider.geocode(text)
         except RoutingError as e:
             log.warning("geocode failed: %s", e)  # message carries status/type only, never the query
+            app.state.routing_error_until = now + ROUTING_BACKOFF_S
             return _unavailable()
         if place is None:
             return JSONResponse({"detail": "no_match"}, status_code=404)
@@ -114,6 +120,8 @@ def create_app(
         cached = app.state.drive_cache.get(key, now)
         if cached is not None:
             return cached
+        if now < app.state.routing_error_until:
+            return _unavailable()
         wall = time.time()
         if not app.state.drive_budget.allow(wall):
             log.warning("drive lookup skipped: daily matrix budget exhausted")
@@ -122,6 +130,7 @@ def create_app(
             legs = await provider.matrix(key, DEST_POINTS)
         except RoutingError as e:
             log.warning("drive lookup failed: %s", e)  # never log coordinates
+            app.state.routing_error_until = now + ROUTING_BACKOFF_S
             return _unavailable()
         app.state.drive_budget.spend(wall)
         body = build_drive_response(VIEWPOINTS, legs, key)
