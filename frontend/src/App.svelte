@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import coastRaw from '@data/coast.geojson?raw';
+  import Map from './components/Map.svelte';
   import { fetchSnapshot } from './lib/api.js';
   import Header from './components/Header.svelte';
   import LocationPicker from './components/LocationPicker.svelte';
@@ -8,6 +10,8 @@
   import PlanView from './components/PlanView.svelte';
   import VerifyLinks from './components/VerifyLinks.svelte';
   import Footer from './components/Footer.svelte';
+
+  const coast = JSON.parse(coastRaw); // Vite only auto-parses .json, so load .geojson as text
 
   const STORAGE_KEY = 'goodfog.viewpoint';
   const DEFAULT_ID = 'east-peak';
@@ -71,6 +75,7 @@
   {/if}
 
   {#if snapshot && vp}
+    <Map {coast} {viewpoints} {selectedId} {tab} onselect={select} />
     <LocationPicker {viewpoints} {selectedId} onselect={select} />
     <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
 
