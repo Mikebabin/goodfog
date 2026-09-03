@@ -5,6 +5,9 @@
   import LocationPicker from './components/LocationPicker.svelte';
   import Tabs from './components/Tabs.svelte';
   import WindowView from './components/WindowView.svelte';
+  import PlanView from './components/PlanView.svelte';
+  import VerifyLinks from './components/VerifyLinks.svelte';
+  import Footer from './components/Footer.svelte';
 
   const STORAGE_KEY = 'goodfog.viewpoint';
   const DEFAULT_ID = 'east-peak';
@@ -67,11 +70,14 @@
     <Tabs {tabs} active={tab} onselect={(id) => (tab = id)} />
 
     {#if tab === 'plan'}
-      <div class="card"><p class="explanation">Plan view coming in the next task.</p></div>
+      <PlanView {vp} windows={snapshot.windows} />
     {:else if window_}
       <WindowView {vp} win={window_} result={vp.results[window_.id]} />
     {/if}
   {/if}
+
+  <VerifyLinks />
+  <Footer generatedAt={snapshot?.generated_at} />
 </div>
 
 <style>
