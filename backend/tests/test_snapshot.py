@@ -70,3 +70,10 @@ def test_viewpoint_entry_carries_coordinates():
     for entry, vp in zip(s["viewpoints"], VIEWPOINTS, strict=True):
         assert entry["lat"] == vp.lat
         assert entry["lon"] == vp.lon
+
+
+def test_features_echoed_and_default_empty():
+    fcs = parse_open_meteo(FIXTURE, 8)
+    assert _snap()["features"] == {}
+    s = build_snapshot(VIEWPOINTS, fcs, now=NOW, app_version="x", commit="y", features={"drive": True})
+    assert s["features"] == {"drive": True}

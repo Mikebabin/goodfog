@@ -100,3 +100,12 @@ async def test_health_stale_after_three_missed_polls():
     assert p.health(now=T0 + timedelta(minutes=46))["stale"] is True
     h = p.health(now=T0)
     assert h["status"] == "ok" and h["app_version"] == "0.1.0" and h["generated_at"] == T0.isoformat(timespec="seconds")
+
+
+async def test_poller_passes_features_to_snapshot_and_health():
+    p = Poller(FakeProvider(), poll_minutes=15, app_version="0.1.0", commit="dev", features={"drive": True})
+    await p.poll_once(now=T0)
+    assert p.snapshot["features"] == {"drive": True}
+    assert p.health(now=T0)["drive"] is True
+    plain = Poller(FakeProvider(), poll_minutes=15, app_version="0.1.0", commit="dev")
+    assert plain.health(now=T0)["drive"] is False

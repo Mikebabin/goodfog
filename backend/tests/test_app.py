@@ -78,3 +78,14 @@ async def test_snapshot_and_health_after_poll():
     body = h.json()
     assert body["status"] == "ok" and body["app_version"] == "0.1.0" and body["commit"] == "abc1234"
     assert body["stale"] is False
+
+
+async def test_build_poller_sets_drive_feature_from_key():
+    async with httpx.AsyncClient() as client:
+        without = build_poller(_settings(), client)
+        with_key = build_poller(
+            Settings(poll_minutes=15, open_meteo_models="best_match", app_version="0.1.0", commit="abc1234", ors_api_key="k"),
+            client,
+        )
+    assert without.features == {"drive": False}
+    assert with_key.features == {"drive": True}

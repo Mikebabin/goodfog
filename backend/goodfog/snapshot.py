@@ -49,7 +49,13 @@ def _viewpoint(vp: Viewpoint, fc: Forecast) -> dict:
 
 
 def build_snapshot(
-    viewpoints, forecasts: list[Forecast], *, now: datetime, app_version: str, commit: str
+    viewpoints,
+    forecasts: list[Forecast],
+    *,
+    now: datetime,
+    app_version: str,
+    commit: str,
+    features: dict | None = None,
 ) -> dict:
     # Top-level windows come from the first forecast and are used by the frontend only for
     # tab ids/labels; each viewpoint below carries its own windows built from its own sun times.
@@ -58,6 +64,7 @@ def build_snapshot(
         "app_version": app_version,
         "commit": commit,
         "generated_at": now.isoformat(timespec="seconds"),
+        "features": dict(features or {}),
         "windows": [asdict(w) for w in windows],
         "viewpoints": [_viewpoint(vp, fc) for vp, fc in zip(viewpoints, forecasts, strict=True)],
     }

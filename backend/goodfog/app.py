@@ -19,7 +19,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 def build_poller(settings: Settings, client: httpx.AsyncClient) -> Poller:
     provider = OpenMeteoProvider([(v.lat, v.lon) for v in VIEWPOINTS], client, models=settings.open_meteo_models)
-    return Poller(provider, settings.poll_minutes, settings.app_version, settings.commit)
+    features = {"drive": settings.ors_api_key is not None}
+    return Poller(provider, settings.poll_minutes, settings.app_version, settings.commit, features=features)
 
 
 def create_app(settings: Settings | None = None, poller: Poller | None = None) -> FastAPI:

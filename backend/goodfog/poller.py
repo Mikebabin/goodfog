@@ -13,11 +13,12 @@ STALE_AFTER_POLLS = 3
 
 
 class Poller:
-    def __init__(self, provider, poll_minutes: int, app_version: str, commit: str) -> None:
+    def __init__(self, provider, poll_minutes: int, app_version: str, commit: str, features: dict | None = None) -> None:
         self.provider = provider
         self.interval = timedelta(minutes=poll_minutes)
         self.app_version = app_version
         self.commit = commit
+        self.features = dict(features or {})
         self.snapshot: dict | None = None
         self.generated_at: datetime | None = None
         self.last_error: str | None = None
@@ -30,7 +31,9 @@ class Poller:
             self.last_error = f"{type(e).__name__}: {e}"
             log.exception("poll failed, keeping previous snapshot")
             return
-        self.snapshot = build_snapshot(VIEWPOINTS, forecasts, now=now, app_version=self.app_version, commit=self.commit)
+        self.snapshot = build_snapshot(
+            VIEWPOINTS, forecasts, now=now, app_version=self.app_version, commit=self.commit, features=self.features
+        )
         self.generated_at = now
         self.last_error = None
         log.info("snapshot updated")
@@ -53,4 +56,5 @@ class Poller:
             "generated_at": self.generated_at.isoformat(timespec="seconds") if self.generated_at else None,
             "stale": stale,
             "last_error": self.last_error,
+            "drive": bool(self.features.get("drive", False)),
         }
