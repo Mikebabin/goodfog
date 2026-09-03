@@ -1,32 +1,26 @@
-# inversion-watch
+# Good Fog
 
-**Marin Inversion Checker** — a single-page web app that tells you whether a
-Bay Area fog *inversion* is worth photographing from a given viewpoint, and
-whether you'll be standing **above** the marine layer or lost **inside** it.
+**Good Fog** tells you whether a Bay Area fog *inversion* is worth photographing from a
+given Marin Headlands or Mt. Tamalpais viewpoint, and whether you'll be standing **above**
+the marine layer or lost **inside** it — for tonight's sunset, tomorrow's sunrise, and
+tomorrow's sunset.
 
-When the summer marine layer sits low in the valleys and you're above it, you
-get that classic "sea of clouds" shot. When the fog base is above your
-elevation, you're just socked in. This app estimates where the fog base sits
-and compares it to each viewpoint so you know before you set the 4:30am alarm.
+Live: https://goodfog.babins.net
 
 ## How it works
 
-1. **Forecast** — pulls hourly cloud cover, wind, temperature, dewpoint, and
-   sunrise/sunset from the free [Open-Meteo](https://open-meteo.com) API. No API
-   key, no account.
-2. **Fog base (LCL)** — computes the lifted condensation level (the approximate
-   fog-base height) from temperature and dewpoint using the Espy/Bolton
-   approximation (~125 m of lift per °C of temp–dewpoint spread).
-3. **Per-location thresholds** — every viewpoint has a calibrated "sweet spot"
-   range for the fog base. The app reports whether you'd be **above the layer**,
-   **right at the edge**, or **inside the fog / socked in**.
-4. **Likelihood score** — combines low-cloud coverage, wind, clear sky above the
-   inversion, and rain into an inversion-likelihood %. The fog-base position
-   *gates* the score: no marine layer (or being stuck inside it) can't produce a
-   high likelihood no matter how calm and clear it is.
+1. **Forecast** — the backend polls hourly cloud cover, wind, temperature, dewpoint, and
+   sunrise/sunset for all eight viewpoints from the free [Open-Meteo](https://open-meteo.com)
+   API in one request. No API key.
+2. **Fog base (LCL)** — computes the lifted condensation level from temperature and dewpoint
+   using the Espy/Bolton approximation (~125 m of lift per °C of temp–dewpoint spread).
+3. **Per-viewpoint thresholds** — every viewpoint has a calibrated "sweet spot" range for the
+   fog base: **above the layer**, **right at the edge**, or **inside the fog / socked in**.
+4. **Likelihood score** — combines low-cloud coverage, wind, clear sky above, and rain into
+   an inversion-likelihood %. The fog-base position gates the score.
 
-The numbers are a **heuristic guide, not a precise measurement** — always
-confirm against the live cameras and Windy before committing to a drive.
+The numbers are a **heuristic guide, not a measurement** — always confirm against the live
+cameras and Windy before setting the 4:30am alarm.
 
 ## Viewpoints
 
@@ -36,24 +30,29 @@ confirm against the live cameras and Windy before committing to a drive.
 | Twin Peaks (from Arguello & Jackson) | 370 ft vantage | Shoot *toward* the 922 ft peaks emerging above the fog |
 | Conzelman Pullouts | ~600 ft | Flexible stops when the fog base is low |
 | Battery Spencer | 790 ft | Golden Gate Bridge framed in fog |
-| Hawk Hill | 922 ft | Classic Marin valley inversion |
+| Hawk Hill | 923 ft | Classic Marin valley inversion |
 | Trojan Point | ~1,750 ft | Mid-mountain sea of clouds (summit gate opens 7am) |
 | West Peak | 2,560 ft | Faces the coast (gate opens 7am) |
 | East Peak | 2,571 ft | Highest vantage — above nearly all layers (gate opens 7am) |
 
-## Viewing windows
+## Stack
 
-Four tabs: **Tonight** (sunset), **Tom. AM** (sunrise), **Tom. PM** (sunset),
-and **Plan** — which compares all three windows to find the best one for the
-selected viewpoint.
+- `backend/` — Python 3.12 + FastAPI. Polls Open-Meteo, does all the fog math, serves `/api/snapshot`.
+- `frontend/` — Svelte 5 + Vite PWA served by nginx. Renders the snapshot; no scoring in the browser.
+- Deployed with Docker Compose on Coolify; merging `main` deploys.
 
 ## Running it
 
-It's a single static `index.html` with no build step and no dependencies.
+```sh
+# backend
+cd backend && uv sync && uv run uvicorn goodfog.app:app --port 8000
+# frontend (separate terminal)
+cd frontend && npm ci --ignore-scripts && npm run dev
+# or the whole stack
+docker compose up --build   # http://localhost:8080
+```
 
-- **Locally:** open `index.html` in a browser.
-- **Deploy:** serve the file from any static host (e.g. Netlify) — no server or
-  API key required.
+Tests: `cd backend && uv run pytest` · `cd frontend && npm test`.
 
 ## Verify before you go
 

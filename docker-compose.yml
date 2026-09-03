@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      # Coolify supplies SOURCE_COMMIT at build time (app setting "Source commit availability" =
+      # build time). Baked into the image, not passed as runtime env — see backend/Dockerfile.
+      args:
+        SOURCE_COMMIT: ${SOURCE_COMMIT:-dev}
+    environment:
+      POLL_MINUTES: ${POLL_MINUTES:-15}
+      OPEN_METEO_MODELS: ${OPEN_METEO_MODELS:-best_match}
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        SOURCE_COMMIT: ${SOURCE_COMMIT:-dev}
+    depends_on:
+      - api
+    # No host port here: Coolify's proxy routes to port 80 by domain.
+    # Local runs get 8080:80 from docker-compose.override.yml automatically.
+    expose:
+      - "80"
+    restart: unless-stopped

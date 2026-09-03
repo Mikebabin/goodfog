@@ -1,0 +1,6 @@
+# Local development only. `docker compose up` merges this automatically;
+# Coolify reads docker-compose.yml alone, so no host port is published there.
+services:
+  web:
+    ports:
+      - "8080:80"
